@@ -16,7 +16,9 @@ res.sendFile(__dirname + "/index.html");
 //definizione dello stato visualizzabile da prompt
 app.listen(port, ()=> {
 console.log("Server in ascolto alla porta " + port);
+console.log('accedi all indirizzo http://localhost:'+port)
 })
+
 
 app.post('/submit', (req, res) =>{
 console.log(req.body); // Visualizza il JSON nel terminale
