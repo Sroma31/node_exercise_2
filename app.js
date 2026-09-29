@@ -24,3 +24,11 @@ app.post('/submit', (req, res) =>{
 console.log(req.body); // Visualizza il JSON nel terminale
 })
 
+//risposta inviata al client
+res.send('
+    <h1>Dati ricevuti con successo!</h1>
+    <p><strong>Nome: </strong> ${nome}</p>
+    <p></p>
+       
+    
+')
