@@ -26,7 +26,7 @@ app.post('/login', (req, res) =>{
     if(username === 'admin' && password === '1234'){
         res.send('Login è avvenuto con successo!');
     } else {
-        res.send('Login fallito. Username o password errati.');
+        res.send('Login fallito. <br> Username inserito: ' + username + ' <br> Password inserita: ' + password + '.');
     }
 });
 
@@ -36,6 +36,9 @@ app.listen(port, ()=> {
 console.log("Server in ascolto alla porta " + port);
 console.log('accedi all indirizzo http://localhost:'+port)
 });
+
+
+
 
 
 
