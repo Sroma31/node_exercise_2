@@ -1,0 +1,77 @@
+ /* ====== RESET MINIMO ====== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ====== BODY ====== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* ====== LOGIN BOX ====== */
+.login-box {
+    background: #ffffff;
+    padding: 30px 35px;
+    border-radius: 12px;
+    width: 320px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    animation: fadeIn 0.4s ease;
+}
+
+/* Titolo */
+.login-box h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Input */
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 18px 0;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+}
+
+.login-box input:focus {
+    border-color: #0078ff;
+    outline: none;
+}
+
+/* Bottone */
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    background: #0078ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.1s;
+}
+
+.login-box button:hover {
+    background: #005fcc;
+}
+
+.login-box button:active {
+    transform: scale(0.98);
+}
+
+/* Animazione */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
