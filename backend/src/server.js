@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "../../frontend/public")));
 
 //pagina di login
-app.get("/", (req, res) =>{
+app.get("/login", (req, res) =>{ //when the user accesses localhost:3000 he must specify the path /login to access the login page, otherwise he will a get error
     res.sendFile(path.join(__dirname, "../../frontend/public/login.html"));
 });
 
