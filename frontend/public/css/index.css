@@ -1,0 +1,37 @@
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== BODY ===== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column; /* IMPORTANTE */
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+    flex: 1; /* OCCUPA LO SPAZIO DISPONIBILE */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.hero h1 {
+    font-size: 40px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    font-size: 18px;
+    color: #555;
+}

@@ -1,11 +1,11 @@
- /* ====== RESET MINIMO ====== */
+ /*  RESET MINIMO  */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-/* ====== BODY ====== */
+/*  BODY  */
 body {
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
@@ -15,7 +15,7 @@ body {
     height: 100vh;
 }
 
-/* ====== LOGIN BOX ====== */
+/*  LOGIN BOX  */
 .login-box {
     background: #ffffff;
     padding: 30px 35px;

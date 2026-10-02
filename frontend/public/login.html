@@ -5,9 +5,21 @@
     <meta charset="UTF-8">
     <title>Login</title>
     <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/navbar.css">
 </head>
 
 <body>
+
+    <div id="navbar">
+        <script>
+            
+            fetch('components/navbar.html')
+                .then(response => response.text())
+                .then(html => document.getElementById('navbar').innerHTML = html);
+
+        </script>
+
+    </div>
 
     <div class="login-box">
         <h2>Login</h2>
