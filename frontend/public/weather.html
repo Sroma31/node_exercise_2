@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather API</title>
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/weather.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div id="navbar"></div>
+    <script>
+        fetch("/components/navbar.html")
+            .then(res => res.text())
+            .then(html => document.getElementById("navbar").innerHTML = html);
+    </script>
+
+    <!-- WEATHER CONTENT -->
+    <div class="weather-wrapper">
+        <div class="weather-box">
+            <h2>Weather API</h2>
+            <p class="subtitle">Inserisci il nome della città per sapere le condizioni meteo</p>
+
+            <form id="weather-form" action="/weather" method="POST">
+                <input type="text" id="city-input" name="city" placeholder="Nome della città" required>
+                <button type="submit">Invia</button>
+            </form>
+        </div>
+
+        <div class="weather-box" id="weather-result"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <div id="footer"></div>
+    <script>
+        fetch("/components/footer.html")
+            .then(res => res.text())
+            .then(html => document.getElementById("footer").innerHTML = html);
+    </script>
+    <script src="/js/weather.js"></script>
+</body>
+
+</html>

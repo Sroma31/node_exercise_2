@@ -1,63 +1,70 @@
- /*  RESET MINIMO  */
+
+/* ===== RESET ===== */
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
-/*  BODY  */
+/* ===== BODY ===== */
 body {
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
 }
 
-/*  LOGIN WRAPPER  */
-.login-wrapper {
+/* ===== WRAPPER ===== */
+.weather-wrapper {
     flex: 1;
     display: flex;
+    flex-direction: column; /* <<< QUESTA È LA CHIAVE */
     justify-content: center;
     align-items: center;
+    gap: 20px; /* distanza tra i due box */
 }
-
-/*  LOGIN BOX  */
-.login-box {
+/* ===== BOX ===== */
+.weather-box {
     background: #ffffff;
     padding: 30px 35px;
     border-radius: 12px;
-    width: 320px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    width: 380px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     animation: fadeIn 0.4s ease;
+    text-align: center;
 }
 
-/* Titolo */
-.login-box h2 {
-    text-align: center;
-    margin-bottom: 25px;
+.weather-box h2 {
+    margin-bottom: 15px;
     color: #333;
     font-weight: 600;
 }
 
+.subtitle {
+    margin-bottom: 25px;
+    color: #555;
+    font-size: 16px;
+}
+
 /* Input */
-.login-box input {
+.weather-box input {
     width: 100%;
     padding: 12px;
-    margin: 10px 0 18px 0;
+    margin-bottom: 18px;
     border: 2px solid #d0d0d0;
     border-radius: 6px;
     font-size: 15px;
     transition: border-color 0.2s;
 }
 
-.login-box input:focus {
+.weather-box input:focus {
     border-color: #0078ff;
     outline: none;
 }
 
-/* Bottone */
-.login-box button {
+/* Button */
+.weather-box button {
     width: 100%;
     padding: 12px;
     background: #0078ff;
@@ -69,16 +76,21 @@ body {
     transition: background 0.25s, transform 0.1s;
 }
 
-.login-box button:hover {
+.weather-box button:hover {
     background: #005fcc;
 }
 
-.login-box button:active {
+.weather-box button:active {
     transform: scale(0.98);
 }
+#weather-result {
+    display: none; /* nascosto all'inizio */
+}
 
-/* Animazione */
+/* Animation */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+

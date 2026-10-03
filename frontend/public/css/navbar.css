@@ -1,4 +1,4 @@
-/* ===== NAVBAR ===== */
+/*  NAVBAR  */
 .navbar {
     width: 100%;
     background: #ffffff;
@@ -40,7 +40,7 @@
     color: #005fcc;
 }
 
-/* ===== MOBILE ===== */
+/*  MOBILE  */
 @media (max-width: 600px) {
     .navbar {
         flex-direction: column;

@@ -17,8 +17,6 @@ app.get("/login", (req, res) =>{ //when the user accesses localhost:3000 he must
 });
 
 
-
-
 //post per il login, se username e password sono corretti, invia un messaggio di successo, altrimenti invia un messaggio di errore
 app.post('/login', (req, res) =>{
     const{username, password} = req.body;
@@ -28,6 +26,30 @@ app.post('/login', (req, res) =>{
     } else {
         res.send('Login fallito. <br> Username inserito: ' + username + ' <br> Password inserita: ' + password + '.');
     }
+});
+
+
+//pagina di signup
+app.get("/signup", (req, res) =>{
+    res.sendFile(path.join(__dirname, "../../frontend/public/signup.html"));
+});
+
+//post per la registrazione, senza persistenza
+app.post('/signup', (req, res) =>{
+    const{username, password} = req.body;
+    res.send('Registrazione completata per: ' + username);
+});
+
+
+//pagina about
+app.get("/about", (req, res) =>{
+    res.sendFile(path.join(__dirname, "../../frontend/public/about.html"));
+});
+
+
+//pagina contact
+app.get("/contact", (req, res) =>{
+    res.sendFile(path.join(__dirname, "../../frontend/public/contact.html"));
 });
 
 

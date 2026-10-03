@@ -1,11 +1,11 @@
-/* ===== RESET ===== */
+/*  RESET  */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* ===== BODY ===== */
+/*  BODY  */
 body {
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
@@ -15,8 +15,8 @@ body {
     flex-direction: column; /* IMPORTANTE */
 }
 
-/* ===== HERO SECTION ===== */
-.hero {
+/*  CONTAINER  */
+.container {
     flex: 1; /* OCCUPA LO SPAZIO DISPONIBILE */
     display: flex;
     flex-direction: column;
@@ -25,13 +25,13 @@ body {
     padding: 20px;
 }
 
-.hero h1 {
+.container h1 {
     font-size: 40px;
     color: #333;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
-.hero p {
+.container p {
     font-size: 18px;
     color: #555;
 }
