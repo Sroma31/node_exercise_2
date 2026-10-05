@@ -1,55 +1,55 @@
-<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html>                                <!-- HTML5. -->
+<html lang="it">                               <!-- Italiano. -->
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact</title>
-    <link rel="stylesheet" href="/css/contact.css">
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/footer.css">
-</head>
+<head>                                         <!-- Head. -->
+    <meta charset="UTF-8">                     <!-- UTF-8. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
+    <title>Contact</title>                      <!-- Titolo. -->
+    <link rel="stylesheet" href="/css/contact.css"> <!-- CSS contact. -->
+    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
+    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
+</head>                                        <!-- Chiude head. -->
 
-<body>
+<body>                                         <!-- Body. -->
 
-    <div id="navbar">
-        <script>
-            fetch('/components/navbar.html')
-                .then(response => response.text())
-                .then(html => document.getElementById('navbar').innerHTML = html);
-        </script>
-    </div>
+    <div id="navbar">                          <!-- Div navbar. -->
+        <script>                               //<!-- Caricamento navbar. -->
+            fetch('/components/navbar.html')   //<!-- Scarica navbar. -->
+                .then(response => response.text()) // Testo.
+                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce.
+        </script>                              <!-- Chiude script. -->
+    </div>                                     <!-- Chiude div. -->
 
-    <main class="contact-wrapper">
-        <div class="contact-box">
-            <h2>Contact</h2>
-            <p>Hai domande o suggerimenti? Ecco come puoi contattarci.</p>
+    <main class="contact-wrapper">             <!-- Contenuto principale. -->
+        <div class="contact-box">              <!-- Box contatti. -->
+            <h2>Contact</h2>                   <!-- Titolo. -->
+            <p>Hai domande o suggerimenti? Ecco come puoi contattarci.</p> <!-- Introduzione. -->
 
-            <ul class="contact-list">
-                <li>
-                    <strong>Email</strong>
-                    <span>info@myapp.example</span>
-                </li>
-                <li>
-                    <strong>Telefono</strong>
-                    <span>+39 123 456 7890</span>
-                </li>
-                <li>
-                    <strong>Indirizzo</strong>
-                    <span>Via Roma 1, 00100 Roma, Italia</span>
-                </li>
-            </ul>
-        </div>
-    </main>
+            <ul class="contact-list">          <!-- Lista contatti. -->
+                <li>                           <!-- Contatto 1. -->
+                    <strong>Email</strong>     <!-- Etichetta. -->
+                    <span>info@myapp.example</span> <!-- Valore. -->
+                </li>                          <!-- Chiude contatto 1. -->
+                <li>                           <!-- Contatto 2. -->
+                    <strong>Telefono</strong>  <!-- Etichetta. -->
+                    <span>+39 123 456 7890</span> <!-- Valore. -->
+                </li>                          <!-- Chiude contatto 2. -->
+                <li>                           <!-- Contatto 3. -->
+                    <strong>Indirizzo</strong> <!-- Etichetta. -->
+                    <span>Via Roma 1, 00100 Roma, Italia</span> <!-- Valore. -->
+                </li>                          <!-- Chiude contatto 3. -->
+            </ul>                              <!-- Chiude lista. -->
+        </div>                                 <!-- Chiude box. -->
+    </main>                                    <!-- Chiude main. -->
 
-    <div id="footer">
-        <script>
-            fetch('/components/footer.html')
-                .then(response => response.text())
-                .then(html => document.getElementById('footer').innerHTML = html);
-        </script>
-    </div>
+    <div id="footer">                          <!-- Div footer. -->
+        <script>                               //<!-- Caricamento footer. -->
+            fetch('/components/footer.html')   //<!-- Scarica footer. -->
+                .then(response => response.text()) // Testo.
+                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce.
+        </script>                              <!-- Chiude script. -->
+    </div>                                     <!-- Chiude div. -->
 
-</body>
+</body>                                        <!-- Chiude body. -->
 
-</html>
+</html>                                        <!-- Chiude HTML. -->

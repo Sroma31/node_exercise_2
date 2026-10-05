@@ -1,48 +1,48 @@
-<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html>                                <!-- HTML5. -->
+<html lang="it">                               <!-- Italiano. -->
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About</title>
-    <link rel="stylesheet" href="/css/about.css">
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/footer.css">
-</head>
+<head>                                         <!-- Head. -->
+    <meta charset="UTF-8">                     <!-- UTF-8. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
+    <title>About</title>                        <!-- Titolo. -->
+    <link rel="stylesheet" href="/css/about.css"> <!-- CSS about. -->
+    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
+    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
+</head>                                        <!-- Chiude head. -->
 
-<body>
+<body>                                         <!-- Body. -->
 
-    <div id="navbar">
-        <script>
-            fetch('/components/navbar.html')
-                .then(response => response.text())
-                .then(html => document.getElementById('navbar').innerHTML = html);
-        </script>
-    </div>
+    <div id="navbar">                          <!-- Div navbar. -->
+        <script>                               //<!-- Caricamento navbar. -->
+            fetch('/components/navbar.html')   //<!-- Scarica navbar. -->
+                .then(response => response.text()) // Testo.
+                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce.
+        </script>                              <!-- Chiude script. -->
+    </div>                                     <!-- Chiude div. -->
 
-    <main class="about-wrapper">
-        <div class="about-box">
-            <h2>About My App</h2>
-            <p>My App è una semplice applicazione web che dimostra l'uso di HTML, CSS e JavaScript per creare pagine moderne e responsive.</p>
+    <main class="about-wrapper">               <!-- Contenuto principale. -->
+        <div class="about-box">                <!-- Box about. -->
+            <h2>About My App</h2>              <!-- Titolo. -->
+            <p>My App è una semplice applicazione web che dimostra l'uso di HTML, CSS e JavaScript per creare pagine moderne e responsive.</p> <!-- Descrizione. -->
 
-            <h3>Cosa offriamo</h3>
-            <ul class="feature-list">
-                <li>Interfaccia pulita e responsive</li>
-                <li>Navigazione semplice tra le pagine</li>
-                <li>Form di login e registrazione</li>
-                <li>Integrazione con API meteo</li>
-            </ul>
-        </div>
-    </main>
+            <h3>Cosa offriamo</h3>             <!-- Sottotitolo. -->
+            <ul class="feature-list">          <!-- Lista funzionalità. -->
+                <li>Interfaccia pulita e responsive</li> <!-- Funzionalità 1. -->
+                <li>Navigazione semplice tra le pagine</li> <!-- Funzionalità 2. -->
+                <li>Form di login e registrazione</li> <!-- Funzionalità 3. -->
+                <li>Integrazione con API meteo</li> <!-- Funzionalità 4. -->
+            </ul>                              <!-- Chiude lista. -->
+        </div>                                 <!-- Chiude box. -->
+    </main>                                    <!-- Chiude main. -->
 
-    <div id="footer">
-        <script>
-            fetch('/components/footer.html')
-                .then(response => response.text())
-                .then(html => document.getElementById('footer').innerHTML = html);
-        </script>
-    </div>
+    <div id="footer">                          <!-- Div footer. -->
+        <script>                               //<!-- Caricamento footer. -->
+            fetch('/components/footer.html')   //<!-- Scarica footer. -->
+                .then(response => response.text()) // Testo.
+                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce.
+        </script>                              <!-- Chiude script. -->
+    </div>                                     <!-- Chiude div. -->
 
-</body>
+</body>                                        <!-- Chiude body. -->
 
-</html>
+</html>                                        <!-- Chiude HTML. -->

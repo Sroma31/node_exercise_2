@@ -1,24 +1,29 @@
-document.getElementById("weather-form").addEventListener("submit", async function(e) {
-    e.preventDefault(); // evita il redirect
+document.getElementById("weather-form").addEventListener("submit", async function(e) { // Seleziona il form e ascolta l'evento di invio.
+    e.preventDefault(); // evita il redirect                             // Blocca il comportamento predefinito del form.
 
-    const city = document.getElementById("city-input").value;
+    const city = document.getElementById("city-input").value;            // Legge il valore inserito nel campo città.
 
-    const res = await fetch("/weather", {
-        method: "POST",
-        headers: {"Content-Type": "application/json" },
-        body: JSON.stringify({ city })
+    const res = await fetch("/weather", {                                // Invia una richiesta POST al server.
+        method: "POST",                                                  // Specifica il metodo POST.
+        headers: {"Content-Type": "application/json" },                  // Indica che il corpo è JSON.
+        body: JSON.stringify({ city })                                   // Converte l'oggetto città in stringa JSON.
     });
 
-    const data = await res.text();
+    const data = await res.text();                                       // Attende e legge la risposta come testo.
 
-    document.getElementById("weather-result").innerHTML = `
-        <div class="weather-response-box subtitle">
-            ${data}
-        </div>
+
+    // Inserisce HTML nel div del risultato.
+    // Apre un div per formattare la risposta.
+    // Inserisce il testo ricevuto dal server.
+    // Chiude il div di formattazione.
+    document.getElementById("weather-result").innerHTML = `              
+        <div class="weather-response-box subtitle">                     
+            ${data}                                                      
+        </div>                                                           
     `;
 
-    // Mostra il box
-    document.getElementById("weather-result").style.display = "block";
+    // Mostra il box                                                       // Commento che spiega l'azione successiva.
+    document.getElementById("weather-result").style.display = "block";   // Rende visibile il box del risultato.
 
 });
 

@@ -1,91 +1,91 @@
-/* ===== RESET ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ===== RESET ===== */                        /* Sezione reset. */
+* {                                            /* Universale. */
+    margin: 0;                                 /* Azzera margini. */
+    padding: 0;                                /* Azzera padding. */
+    box-sizing: border-box;                    /* Include bordi e padding. */
+}                                              /* Chiude reset. */
 
-/* ===== BODY ===== */
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
+/* ===== BODY ===== */                         /* Sezione body. */
+body {                                         /* Body. */
+    font-family: Arial, sans-serif;            /* Font. */
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Sfondo gradiente. */
+    min-height: 100vh;                         /* Altezza minima. */
+    display: flex;                             /* Flex. */
+    flex-direction: column;                    /* Colonna. */
+}                                              /* Chiude body. */
 
-/* ===== CONTACT WRAPPER ===== */
-.contact-wrapper {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
+/* ===== CONTACT WRAPPER ===== */              /* Sezione wrapper. */
+.contact-wrapper {                             /* Wrapper. */
+    flex: 1;                                   /* Occupa spazio. */
+    display: flex;                             /* Flex. */
+    justify-content: center;                   /* Centra orizzontalmente. */
+    align-items: center;                       /* Centra verticalmente. */
+    padding: 20px;                             /* Spazio interno. */
+}                                              /* Chiude wrapper. */
 
-/* ===== CONTACT BOX ===== */
-.contact-box {
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 500px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    animation: fadeIn 0.4s ease;
-}
+/* ===== CONTACT BOX ===== */                  /* Sezione box. */
+.contact-box {                                 /* Box. */
+    background: #ffffff;                       /* Sfondo bianco. */
+    padding: 40px;                             /* Spazio interno. */
+    border-radius: 12px;                       /* Angoli. */
+    width: 100%;                               /* Larghezza piena. */
+    max-width: 500px;                          /* Larghezza massima. */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Ombra. */
+    animation: fadeIn 0.4s ease;               /* Animazione. */
+}                                              /* Chiude box. */
 
-.contact-box h2 {
-    text-align: center;
-    margin-bottom: 15px;
-    color: #333;
-    font-weight: 600;
-}
+.contact-box h2 {                              /* Titolo. */
+    text-align: center;                        /* Centrato. */
+    margin-bottom: 15px;                       /* Margine. */
+    color: #333;                               /* Colore. */
+    font-weight: 600;                          /* Spessore. */
+}                                              /* Chiude h2. */
 
-.contact-box > p {
-    text-align: center;
-    color: #555;
-    margin-bottom: 25px;
-}
+.contact-box > p {                             /* Paragrafo figlio diretto. */
+    text-align: center;                        /* Centrato. */
+    color: #555;                               /* Colore. */
+    margin-bottom: 25px;                       /* Margine. */
+}                                              /* Chiude p. */
 
-/* ===== CONTACT LIST ===== */
-.contact-list {
-    list-style: none;
-    padding: 0;
-}
+/* ===== CONTACT LIST ===== */                 /* Sezione lista. */
+.contact-list {                                /* Lista. */
+    list-style: none;                          /* Rimuove pallini. */
+    padding: 0;                                /* Azzera padding. */
+}                                              /* Chiude lista. */
 
-.contact-list li {
-    display: flex;
-    flex-direction: column;
-    padding: 15px 0;
-    border-bottom: 1px solid #eee;
-}
+.contact-list li {                             /* Elemento lista. */
+    display: flex;                             /* Flex. */
+    flex-direction: column;                    /* Dispone etichetta e valore in colonna. */
+    padding: 15px 0;                           /* Spazio verticale. */
+    border-bottom: 1px solid #eee;             /* Bordo inferiore. */
+}                                              /* Chiude li. */
 
-.contact-list li:last-child {
-    border-bottom: none;
-}
+.contact-list li:last-child {                  /* Ultimo elemento. */
+    border-bottom: none;                       /* Rimuove bordo. */
+}                                              /* Chiude last-child. */
 
-.contact-list strong {
-    color: #0078ff;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
-}
+.contact-list strong {                         /* Etichette. */
+    color: #0078ff;                            /* Colore azzurro. */
+    font-size: 14px;                           /* Dimensione. */
+    text-transform: uppercase;                 /* Maiuscolo. */
+    letter-spacing: 0.5px;                     /* Spaziatura lettere. */
+    margin-bottom: 5px;                        /* Margine. */
+}                                              /* Chiude strong. */
 
-.contact-list span {
-    color: #555;
-    font-size: 16px;
-}
+.contact-list span {                           /* Valori. */
+    color: #555;                               /* Colore grigio. */
+    font-size: 16px;                           /* Dimensione. */
+}                                              /* Chiude span. */
 
-/* ===== ANIMATION ===== */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+/* ===== ANIMATION ===== */                    /* Animazione. */
+@keyframes fadeIn {                            /* Definizione. */
+    from { opacity: 0; transform: translateY(10px); } /* Inizio. */
+    to { opacity: 1; transform: translateY(0); } /* Fine. */
+}                                              /* Chiude keyframes. */
 
-/* ===== MOBILE ===== */
-@media (max-width: 600px) {
-    .contact-box {
-        padding: 25px;
-    }
-}
+/* ===== MOBILE ===== */                       /* Mobile. */
+@media (max-width: 600px) {                    /* Schermi stretti. */
+    .contact-box {                             /* Box mobile. */
+        padding: 25px;                         /* Riduce padding. */
+    }                                          /* Chiude box. */
+}                                              /* Chiude media query. */

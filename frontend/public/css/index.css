@@ -1,37 +1,37 @@
-/*  RESET  */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/*  RESET  */                                  /* Sezione reset CSS. */
+* {                                            /* Selettore universale per tutti gli elementi. */
+    margin: 0;                                /* Azzera il margine esterno predefinito. */
+    padding: 0;                               /* Azzera il padding interno predefinito. */
+    box-sizing: border-box;                   /* Include bordi e padding nelle dimensioni totali. */
+}                                              /* Chiude il selettore universale. */
 
-/*  BODY  */
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
-    min-height: 100vh;
+/*  BODY  */                                   /* Sezione body. */
+body {                                         /* Selettore dell'elemento body. */
+    font-family: Arial, sans-serif;            /* Imposta il font principale e un fallback. */
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Applica uno sfondo a gradiente. */
+    min-height: 100vh;                         /* Altezza minima uguale all'altezza della finestra. */
 
-    display: flex;
-    flex-direction: column; /* IMPORTANTE */
-}
+    display: flex;                             /* Attiva il layout flessivo. */
+    flex-direction: column; /* IMPORTANTE */    /* Dispone i figli in colonna. */
+}                                              /* Chiude il selettore body. */
 
-/*  CONTAINER  */
-.container {
-    flex: 1; /* OCCUPA LO SPAZIO DISPONIBILE */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
+/*  CONTAINER  */                              /* Sezione container. */
+.container {                                   /* Selettore del contenitore principale. */
+    flex: 1; /* OCCUPA LO SPAZIO DISPONIBILE */ /* Occupa lo spazio verticale rimanente. */
+    display: flex;                             /* Attiva il layout flessivo. */
+    flex-direction: column;                    /* Dispone i figli in colonna. */
+    justify-content: center;                   /* Centra i figli verticalmente. */
+    align-items: center;                       /* Centra i figli orizzontalmente. */
+    padding: 20px;                             /* Aggiunge spazio interno di 20 pixel. */
+}                                              /* Chiude .container. */
 
-.container h1 {
-    font-size: 40px;
-    color: #333;
-    margin-bottom: 20px;
-}
+.container h1 {                                /* Selettore del titolo dentro il container. */
+    font-size: 40px;                           /* Imposta la dimensione del font a 40 pixel. */
+    color: #333;                               /* Imposta il colore del testo a grigio scuro. */
+    margin-bottom: 20px;                       /* Aggiunge margine inferiore di 20 pixel. */
+}                                              /* Chiude .container h1. */
 
-.container p {
-    font-size: 18px;
-    color: #555;
-}
+.container p {                                 /* Selettore del paragrafo dentro il container. */
+    font-size: 18px;                           /* Imposta la dimensione del font a 18 pixel. */
+    color: #555;                               /* Imposta il colore del testo a grigio medio. */
+}                                              /* Chiude .container p. */

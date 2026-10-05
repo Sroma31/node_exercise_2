@@ -1,88 +1,88 @@
-/* ===== RESET ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ===== RESET ===== */                        /* Sezione reset. */
+* {                                            /* Universale. */
+    margin: 0;                                 /* Azzera margini. */
+    padding: 0;                                /* Azzera padding. */
+    box-sizing: border-box;                    /* Include bordi e padding. */
+}                                              /* Chiude reset. */
 
-/* ===== BODY ===== */
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
+/* ===== BODY ===== */                         /* Sezione body. */
+body {                                         /* Body. */
+    font-family: Arial, sans-serif;            /* Font. */
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Sfondo gradiente. */
+    min-height: 100vh;                         /* Altezza minima. */
+    display: flex;                             /* Flex. */
+    flex-direction: column;                    /* Colonna. */
+}                                              /* Chiude body. */
 
-/* ===== ABOUT WRAPPER ===== */
-.about-wrapper {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
+/* ===== ABOUT WRAPPER ===== */                /* Sezione wrapper About. */
+.about-wrapper {                               /* Wrapper. */
+    flex: 1;                                   /* Occupa spazio. */
+    display: flex;                             /* Flex. */
+    justify-content: center;                   /* Centra orizzontalmente. */
+    align-items: center;                       /* Centra verticalmente. */
+    padding: 20px;                             /* Spazio interno. */
+}                                              /* Chiude wrapper. */
 
-/* ===== ABOUT BOX ===== */
-.about-box {
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 600px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    animation: fadeIn 0.4s ease;
-}
+/* ===== ABOUT BOX ===== */                    /* Sezione box About. */
+.about-box {                                   /* Box. */
+    background: #ffffff;                       /* Sfondo bianco. */
+    padding: 40px;                             /* Spazio interno. */
+    border-radius: 12px;                       /* Angoli. */
+    width: 100%;                               /* Larghezza piena. */
+    max-width: 600px;                          /* Larghezza massima. */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Ombra. */
+    animation: fadeIn 0.4s ease;               /* Animazione. */
+}                                              /* Chiude box. */
 
-.about-box h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-    font-weight: 600;
-}
+.about-box h2 {                                /* Titolo. */
+    text-align: center;                        /* Centrato. */
+    margin-bottom: 20px;                       /* Margine. */
+    color: #333;                               /* Colore. */
+    font-weight: 600;                          /* Spessore. */
+}                                              /* Chiude h2. */
 
-.about-box h3 {
-    margin-top: 25px;
-    margin-bottom: 15px;
-    color: #333;
-    font-weight: 600;
-}
+.about-box h3 {                                /* Sottotitolo. */
+    margin-top: 25px;                          /* Margine sopra. */
+    margin-bottom: 15px;                       /* Margine sotto. */
+    color: #333;                               /* Colore. */
+    font-weight: 600;                          /* Spessore. */
+}                                              /* Chiude h3. */
 
-.about-box p {
-    color: #555;
-    font-size: 16px;
-    line-height: 1.6;
-}
+.about-box p {                                 /* Paragrafo. */
+    color: #555;                               /* Colore. */
+    font-size: 16px;                           /* Dimensione. */
+    line-height: 1.6;                          /* Altezza riga. */
+}                                              /* Chiude p. */
 
-/* ===== FEATURE LIST ===== */
-.feature-list {
-    list-style: none;
-    padding: 0;
-}
+/* ===== FEATURE LIST ===== */                 /* Sezione lista. */
+.feature-list {                                /* Lista. */
+    list-style: none;                          /* Rimuove pallini. */
+    padding: 0;                                /* Azzera padding. */
+}                                              /* Chiude lista. */
 
-.feature-list li {
-    padding: 10px 0 10px 28px;
-    color: #555;
-    position: relative;
-}
+.feature-list li {                             /* Elemento lista. */
+    padding: 10px 0 10px 28px;                 /* Spazio interno. */
+    color: #555;                               /* Colore. */
+    position: relative;                        /* Posizione relativa per pseudo-elemento. */
+}                                              /* Chiude li. */
 
-.feature-list li::before {
-    content: "✓";
-    position: absolute;
-    left: 0;
-    color: #0078ff;
-    font-weight: bold;
-}
+.feature-list li::before {                     /* Pseudo-elemento prima di ogni elemento. */
+    content: "✓";                              /* Inserisce segno di spunta. */
+    position: absolute;                        /* Posizionamento assoluto. */
+    left: 0;                                   /* Allinea a sinistra. */
+    color: #0078ff;                            /* Colore azzurro. */
+    font-weight: bold;                         /* Grassetto. */
+}                                              /* Chiude pseudo-elemento. */
 
-/* ===== ANIMATION ===== */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+/* ===== ANIMATION ===== */                    /* Sezione animazione. */
+@keyframes fadeIn {                            /* Definizione. */
+    from { opacity: 0; transform: translateY(10px); } /* Inizio. */
+    to { opacity: 1; transform: translateY(0); } /* Fine. */
+}                                              /* Chiude keyframes. */
 
-/* ===== MOBILE ===== */
-@media (max-width: 600px) {
-    .about-box {
-        padding: 25px;
-    }
-}
+/* ===== MOBILE ===== */                       /* Sezione mobile. */
+@media (max-width: 600px) {                    /* Schermi piccoli. */
+    .about-box {                               /* Box su mobile. */
+        padding: 25px;                         /* Riduce padding. */
+    }                                          /* Chiude box mobile. */
+}                                              /* Chiude media query. */

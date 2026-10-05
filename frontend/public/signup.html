@@ -1,44 +1,44 @@
-<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html>                                <!-- HTML5. -->
+<html lang="it">                               <!-- Italiano. -->
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="/css/signup.css">
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/footer.css">
-</head>
+<head>                                         <!-- Head. -->
+    <meta charset="UTF-8">                     <!-- UTF-8. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
+    <title>Sign Up</title>                     <!-- Titolo. -->
+    <link rel="stylesheet" href="/css/signup.css"> <!-- CSS signup. -->
+    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
+    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
+</head>                                        <!-- Chiude head. -->
 
-<body>
+<body>                                         <!-- Body. -->
 
-    <div id="navbar">
-        <script>
-            fetch('/components/navbar.html')
-                .then(response => response.text())
-                .then(html => document.getElementById('navbar').innerHTML = html);
-        </script>
-    </div>
+    <div id="navbar">                          <!-- Div navbar. -->
+        <script>                               //<!-- Caricamento navbar. -->
+            fetch('/components/navbar.html')   //<!-- Scarica navbar. -->
+                .then(response => response.text()) // Testo.
+                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce.
+        </script>                              <!-- Chiude script. -->
+    </div>                                     <!-- Chiude div. -->
 
-    <div class="signup-wrapper">
-        <div class="signup-box">
-            <h2>Sign Up</h2>
-            <form action="/signup" method="POST">
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <button type="submit">Registrati</button>
-            </form>
-        </div>
-    </div>
+    <div class="signup-wrapper">               <!-- Wrapper per centrare. -->
+        <div class="signup-box">               <!-- Box form. -->
+            <h2>Sign Up</h2>                   <!-- Titolo form. -->
+            <form action="/signup" method="POST"> <!-- Form invio a /signup. -->
+                <input type="text" name="username" placeholder="Username" required> <!-- Username. -->
+                <input type="password" name="password" placeholder="Password" required> <!-- Password. -->
+                <button type="submit">Registrati</button> <!-- Pulsante. -->
+            </form>                            <!-- Chiude form. -->
+        </div>                                 <!-- Chiude box. -->
+    </div>                                     <!-- Chiude wrapper. -->
 
-    <div id="footer">
-        <script>
-            fetch('/components/footer.html')
-                .then(response => response.text())
-                .then(html => document.getElementById('footer').innerHTML = html);
-        </script>
-    </div>
+    <div id="footer">                          <!-- Div footer. -->
+        <script>                               //<!-- Caricamento footer. -->
+            fetch('/components/footer.html')   //<!-- Scarica footer. -->
+                .then(response => response.text()) // Testo.
+                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce.
+        </script>                              <!-- Chiude script. -->
+    </div>                                     <!-- Chiude div. -->
 
-</body>
+</body>                                        <!-- Chiude body. -->
 
-</html>
+</html>                                        <!-- Chiude HTML. -->

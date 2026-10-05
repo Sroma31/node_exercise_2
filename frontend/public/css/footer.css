@@ -1,10 +1,11 @@
-/*  FOOTER  */
-.footer {
-    margin-top: auto;/* margin-top: auto; fa sì che il footer si posizioni in basso */
-    background: #ffffff;/* background: #ffffff;  fa sì che il footer abbia uno sfondo bianco */
-    padding: 15px; /* padding: 15px; fa sì che il footer abbia un po' di spazio interno */
-    text-align: center;/* text-align: center; fa sì che il testo del footer sia centrato */
-    color: #666;
-    font-size: 14px;
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.1);/* box-shadow: 0 -4px 12px rgba(0,0,0,0.1); fa sì che il footer abbia un'ombra sopra di esso */
-}
+/*  FOOTER  */                                 /* Sezione footer. */
+
+.footer {                                      /* Selettore footer. */
+    margin-top: auto;/* margin-top: auto; fa sì che il footer si posizioni in basso */ /* Spinge in basso. */
+    background: #ffffff;/* background: #ffffff;  fa sì che il footer abbia uno sfondo bianco */ /* Sfondo bianco. */
+    padding: 15px; /* padding: 15px; fa sì che il footer abbia un po' di spazio interno */ /* Spazio interno. */
+    text-align: center;/* text-align: center; fa sì che il testo del footer sia centrato */ /* Testo centrato. */
+    color: #666;                               /* Colore grigio. */
+    font-size: 14px;                           /* Dimensione. */
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.1);/* box-shadow: 0 -4px 12px rgba(0,0,0,0.1); fa sì che il footer abbia un'ombra sopra di esso */ /* Ombra sopra. */
+}                                              /* Chiude footer. */

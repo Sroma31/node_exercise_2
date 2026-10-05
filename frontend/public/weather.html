@@ -1,48 +1,48 @@
-<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html>                                <!-- HTML5. -->
+<html lang="it">                               <!-- Italiano. -->
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather API</title>
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/weather.css">
-</head>
+<head>                                         <!-- Head. -->
+    <meta charset="UTF-8">                     <!-- UTF-8. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
+    <title>Weather API</title>                 <!-- Titolo. -->
+    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
+    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
+    <link rel="stylesheet" href="/css/weather.css"> <!-- CSS weather. -->
+</head>                                        <!-- Chiude head. -->
 
-<body>
+<body>                                         <!-- Body. -->
 
-    <!-- NAVBAR -->
-    <div id="navbar"></div>
-    <script>
-        fetch("/components/navbar.html")
-            .then(res => res.text())
-            .then(html => document.getElementById("navbar").innerHTML = html);
-    </script>
+    <!-- NAVBAR -->                            <!-- Inizio navbar. -->
+    <div id="navbar"></div>                    <!-- Div navbar. -->
+    <script>                                   //<!-- Caricamento navbar. -->
+        fetch("/components/navbar.html")       //<!-- Scarica navbar. -->
+            .then(res => res.text())           // Testo.
+            .then(html => document.getElementById("navbar").innerHTML = html); // Inserisce.
+    </script>                                  <!-- Chiude script. -->
 
-    <!-- WEATHER CONTENT -->
-    <div class="weather-wrapper">
-        <div class="weather-box">
-            <h2>Weather API</h2>
-            <p class="subtitle">Inserisci il nome della città per sapere le condizioni meteo</p>
+    <!-- WEATHER CONTENT -->                   <!-- Contenuto meteo. -->
+    <div class="weather-wrapper">              <!-- Wrapper. -->
+        <div class="weather-box">              <!-- Box form. -->
+            <h2>Weather API</h2>               <!-- Titolo. -->
+            <p class="subtitle">Inserisci il nome della città per sapere le condizioni meteo</p> <!-- Istruzioni. -->
 
-            <form id="weather-form" action="/weather" method="POST">
-                <input type="text" id="city-input" name="city" placeholder="Nome della città" required>
-                <button type="submit">Invia</button>
-            </form>
-        </div>
+            <form id="weather-form" action="/weather" method="POST"> <!-- Form meteo. -->
+                <input type="text" id="city-input" name="city" placeholder="Nome della città" required> <!-- Input città. -->
+                <button type="submit">Invia</button> <!-- Pulsante. -->
+            </form>                            <!-- Chiude form. -->
+        </div>                                 <!-- Chiude box. -->
 
-        <div class="weather-box" id="weather-result"></div>
-    </div>
+        <div class="weather-box" id="weather-result"></div> <!-- Box risultato. -->
+    </div>                                     <!-- Chiude wrapper. -->
 
-    <!-- FOOTER -->
-    <div id="footer"></div>
-    <script>
-        fetch("/components/footer.html")
-            .then(res => res.text())
-            .then(html => document.getElementById("footer").innerHTML = html);
-    </script>
-    <script src="/js/weather.js"></script>
-</body>
+    <!-- FOOTER -->                            <!-- Inizio footer. -->
+    <div id="footer"></div>                    <!-- Div footer. -->
+    <script>                                   //<!-- Caricamento footer. -->
+        fetch("/components/footer.html")       //<!-- Scarica footer. -->
+            .then(res => res.text())           // Testo.
+            .then(html => document.getElementById("footer").innerHTML = html); // Inserisce.
+    </script>                                  <!-- Chiude script. -->
+    <script src="/js/weather.js"></script>     <!-- JS meteo. -->
+</body>                                        <!-- Chiude body. -->
 
-</html>
+</html>                                        <!-- Chiude HTML. -->

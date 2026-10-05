@@ -1,84 +1,84 @@
- /*  RESET MINIMO  */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+ /*  RESET MINIMO  */                          /* Sezione reset minimo. */
+* {                                            /* Selettore universale. */
+    box-sizing: border-box;                    /* Include bordi e padding nelle dimensioni. */
+    margin: 0;                                 /* Azzera i margini. */
+    padding: 0;                                /* Azzera i padding. */
+}                                              /* Chiude il reset. */
 
-/*  BODY  */
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
+/*  BODY  */                                   /* Sezione body. */
+body {                                         /* Selettore body. */
+    font-family: Arial, sans-serif;            /* Imposta il font. */
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Sfondo gradiente. */
+    display: flex;                             /* Layout flessivo. */
+    flex-direction: column;                    /* Dispone i figli in colonna. */
+    min-height: 100vh;                         /* Altezza minima finestra. */
+}                                              /* Chiude body. */
 
-/*  LOGIN WRAPPER  */
-.login-wrapper {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+/*  LOGIN WRAPPER  */                          /* Sezione wrapper login. */
+.login-wrapper {                               /* Selettore del wrapper. */
+    flex: 1;                                   /* Occupa lo spazio verticale disponibile. */
+    display: flex;                             /* Layout flessivo. */
+    justify-content: center;                   /* Centra orizzontalmente. */
+    align-items: center;                       /* Centra verticalmente. */
+}                                              /* Chiude wrapper. */
 
-/*  LOGIN BOX  */
-.login-box {
-    background: #ffffff;
-    padding: 30px 35px;
-    border-radius: 12px;
-    width: 320px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    animation: fadeIn 0.4s ease;
-}
+/*  LOGIN BOX  */                              /* Sezione box login. */
+.login-box {                                   /* Selettore del box. */
+    background: #ffffff;                       /* Sfondo bianco. */
+    padding: 30px 35px;                        /* Spazio interno. */
+    border-radius: 12px;                       /* Angoli arrotondati. */
+    width: 320px;                              /* Larghezza fissa. */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Ombra. */
+    animation: fadeIn 0.4s ease;               /* Animazione di comparsa. */
+}                                              /* Chiude box. */
 
-/* Titolo */
-.login-box h2 {
-    text-align: center;
-    margin-bottom: 25px;
-    color: #333;
-    font-weight: 600;
-}
+/* Titolo */                                   /* Commento per il titolo. */
+.login-box h2 {                                /* Selettore del titolo. */
+    text-align: center;                        /* Centra il testo. */
+    margin-bottom: 25px;                       /* Margine inferiore. */
+    color: #333;                               /* Colore grigio scuro. */
+    font-weight: 600;                          /* Spessore semi-bold. */
+}                                              /* Chiude h2. */
 
-/* Input */
-.login-box input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0 18px 0;
-    border: 2px solid #d0d0d0;
-    border-radius: 6px;
-    font-size: 15px;
-    transition: border-color 0.2s;
-}
+/* Input */                                    /* Commento per gli input. */
+.login-box input {                             /* Selettore degli input. */
+    width: 100%;                               /* Larghezza piena del box. */
+    padding: 12px;                             /* Spazio interno. */
+    margin: 10px 0 18px 0;                     /* Margini sopra e sotto. */
+    border: 2px solid #d0d0d0;                 /* Bordo grigio chiaro. */
+    border-radius: 6px;                        /* Angoli arrotondati. */
+    font-size: 15px;                           /* Dimensione testo. */
+    transition: border-color 0.2s;             /* Transizione del colore del bordo. */
+}                                              /* Chiude input. */
 
-.login-box input:focus {
-    border-color: #0078ff;
-    outline: none;
-}
+.login-box input:focus {                       /* Stile quando l'input è selezionato. */
+    border-color: #0078ff;                     /* Bordo azzurro. */
+    outline: none;                             /* Rimuove l'outline predefinito. */
+}                                              /* Chiude focus. */
 
-/* Bottone */
-.login-box button {
-    width: 100%;
-    padding: 12px;
-    background: #0078ff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.25s, transform 0.1s;
-}
+/* Bottone */                                  /* Commento per il bottone. */
+.login-box button {                            /* Selettore del pulsante. */
+    width: 100%;                               /* Larghezza piena. */
+    padding: 12px;                             /* Spazio interno. */
+    background: #0078ff;                       /* Sfondo azzurro. */
+    color: white;                              /* Testo bianco. */
+    border: none;                              /* Nessun bordo. */
+    border-radius: 6px;                        /* Angoli arrotondati. */
+    font-size: 16px;                           /* Dimensione testo. */
+    cursor: pointer;                           /* Cursore a mano. */
+    transition: background 0.25s, transform 0.1s; /* Transizioni. */
+}                                              /* Chiude button. */
 
-.login-box button:hover {
-    background: #005fcc;
-}
+.login-box button:hover {                      /* Hover del pulsante. */
+    background: #005fcc;                       /* Sfondo azzurro scuro. */
+}                                              /* Chiude hover. */
 
-.login-box button:active {
-    transform: scale(0.98);
-}
+.login-box button:active {                     /* Pulsante mentre viene cliccato. */
+    transform: scale(0.98);                    /* Riduce leggermente la dimensione. */
+}                                              /* Chiude active. */
 
-/* Animazione */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
+/* Animazione */                               /* Commento per l'animazione. */
+@keyframes fadeIn {                            /* Definisce l'animazione fadeIn. */
+    from { opacity: 0; transform: translateY(10px); } /* Stato iniziale. */
+    to   { opacity: 1; transform: translateY(0); } /* Stato finale. */
+}                                              /* Chiude keyframes. */
