@@ -1,29 +1,27 @@
+const axios = require("axios"); // Importa axios per fare richieste HTTP all'API meteo.
 
+// Definisce la funzione che gestisce la richiesta POST /weather.
+const getWeather = async (req, res) => {
+    const city = req.body.city; // Estrae il nome della città dal corpo della richiesta JSON.
+    const apiKey = "c28acc12768cc42c658f08d6c9839b40"; // Chiave API per OpenWeatherMap.
 
-
-
-
-
-
-
-weatherController.post('/weather', async (req, res) =>{             // Definisce la route POST per elaborare la richiesta meteo.
-    const city = req.body.city;                       // Estrae la città dal corpo della richiesta.
-    const apiKey = "c28acc12768cc42c658f08d6c9839b40"; // Chiave per l'API di OpenWeatherMap.
-
-    try {                                             // Inizia un blocco try per gestire eventuali errori.
+    try { // Inizia un blocco per catturare eventuali errori.
+        // Chiama l'API di OpenWeatherMap passando città, chiave e unità metriche.
         const response = await axios.get(
             `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`
-        ); // Chiama l'API meteo di OpenWeatherMap.
+        );
 
-        const data = response.data;
+        const data = response.data; // Estrae i dati JSON dalla risposta.
 
-        if (data.cod !== 200) {                       // Controlla se la risposta è valida.
+        // Se la risposta HTTP non è 200, la città non è stata trovata.
+        if (response.status !== 200) {
             return res.json({
                 error: true,
                 message: "Città non trovata"
             });
         }
 
+        // Risponde al client con i dati meteo più rilevanti.
         res.json({
             city: data.name,
             description: data.weather[0].description,
@@ -31,13 +29,15 @@ weatherController.post('/weather', async (req, res) =>{             // Definisce
             temperature: data.main.temp,
             humidity: data.main.humidity,
             windSpeed: data.wind.speed
-        }); // Invia la risposta JSON al client con i dati meteo.
+        });
 
-    } catch (error) {
-        console.error("Errore durante la richiesta meteo:", error.message);
+    } catch (error) { // Se la chiamata all'API fallisce.
+        console.error("Errore durante la richiesta meteo:", error.message); // Scrive l'errore in console.
         res.json({
             error: true,
             message: "Errore nel recupero dei dati meteo"
         });
     }
-}); // Chiude la route POST /weather. 
+};
+
+module.exports = { getWeather }; // Esporta la funzione per usarla nelle route.

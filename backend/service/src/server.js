@@ -3,15 +3,16 @@ var path = require("path");                    // Importa il modulo per gestire 
 var app = express();                           // Crea l'applicazione Express.
 var port = 3000;                               // Definisce la porta del server.
 var bodyParser = require("body-parser");       // Importa il middleware per leggere il corpo delle richieste.
-var axios = require("axios");                  // Importa il client HTTP per chiamare l'API meteo.
-
-
-var pageRoutes = require("./route/pageroutes"); // Importa le routes delle pagine statiche.
-app.use("/", pageRoutes);    // Usa le routes definite in pageroutes.js per gestire le richieste alle pagine statiche.
 
 // il body parser serve per leggere i dati inviati dal form
 app.use(bodyParser.json());                    // Abilita la lettura del corpo in formato JSON.
 app.use(bodyParser.urlencoded({ extended: true })); // Abilita la lettura dei dati inviati dai form HTML.
+
+var pageRoutes = require("./route/pageroutes"); // Importa le routes delle pagine statiche.
+app.use("/", pageRoutes);    // Usa le routes definite in pageroutes.js per gestire le richieste alle pagine statiche.
+
+var weatherRoutes = require("./route/weather"); // Importa le routes per le richieste meteo.
+app.use("/", weatherRoutes); // Usa le routes definite in weather.js per gestire le richieste meteo.
 
 
 

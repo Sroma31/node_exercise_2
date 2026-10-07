@@ -1,11 +1,11 @@
-// la route authweather è quella che gestisce il post per ottenere i dati meteo, richiama l servizio api
-
+// Questo file definisce la route che gestisce le richieste meteo.
+// Il controller si occupa di chiamare l'API esterna e restituire i dati al client.
 
 const express = require("express"); // Importa il framework Express.
-const router = express.Router(); // Crea un router Express per gestire le rotte.
+const router = express.Router(); // Crea un router Express per raggruppare le rotte.
 
-const {weathercontroller} = require("../controller/weatherController"); // Importa il controller per gestire le richieste meteo.    
+const { getWeather } = require("../controllers/weatherController"); // Importa la funzione getWeather dal controller.
 
-router.post("/weather", weathercontroller.getWeather); // Definisce la route POST per ottenere i dati meteo.
+router.post("/weather", getWeather); // Associa la route POST /weather alla funzione del controller.
 
-module.exports = router; // Esporta il router per essere utilizzato nel server.
+module.exports = router; // Esporta il router per essere usato nel server.
