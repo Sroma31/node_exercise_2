@@ -3,7 +3,9 @@ const fetch = require('node-fetch');
 
 exports.weatherController = async (req, res) => {
     const city = req.body.city;
-    const apiKey = "c28acc12768cc42c658f08d6c9839b40";
+    const apiKey = process.env.OPENWEATHERMAP_API_KEY;
+
+    // c28acc12768cc42c658f08d6c9839b40 chiave api per meteo
    
     try {
 
