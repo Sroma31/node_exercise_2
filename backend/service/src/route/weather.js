@@ -4,8 +4,46 @@
 const express = require("express"); // Importa il framework Express.
 const router = express.Router(); // Crea un router Express per raggruppare le rotte.
 
-const { getWeather } = require("../controllers/weatherController"); // Importa la funzione getWeather dal controller.
+const { weatherController } = require("../controllers/weatherController"); // Importa la funzione getWeather dal controller.
 
-router.post("/weather", getWeather); // Associa la route POST /weather alla funzione del controller.
+router.post("/weather", weatherController); // Associa la route POST /weather alla funzione del controller.
 
 module.exports = router; // Esporta il router per essere usato nel server.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

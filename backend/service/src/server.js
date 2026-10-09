@@ -14,26 +14,15 @@ app.use("/", pageRoutes);    // Usa le routes definite in pageroutes.js per gest
 var weatherRoutes = require("./route/weather"); // Importa le routes per le richieste meteo.
 app.use("/", weatherRoutes); // Usa le routes definite in weather.js per gestire le richieste meteo.
 
+var authRoutes = require("./route/auth"); // Importa le routes per le richieste di autenticazione.
+app.use("/", authRoutes); // Usa le routes definite in auth.js per gestire le richieste di autenticazione.
 
+var signinRoutes = require("./route/signin"); // Importa le routes per le richieste di registrazione.
+app.use("/", signinRoutes); // Usa le routes definite in signin.js per gestire le richieste di registrazione.
 
 app.use(express.static(path.join(__dirname, "../../../frontend/public"))); // Serve i file statici della cartella public.
 
-//post per il login, se username e password sono corretti, invia un messaggio di successo, altrimenti invia un messaggio di errore
-app.post('/login', (req, res) =>{              // Definisce la route POST per elaborare il login.
-    const{username, password} = req.body;      // Estrae username e password dal corpo della richiesta.
 
-    if(username === 'admin' && password === '1234'){ // Controlla se le credenziali sono corrette.
-        res.send('Login è avvenuto con successo!');  // Risponde con un messaggio di successo.
-    } else {                                     // Altrimenti le credenziali sono errate.
-        res.send('Login fallito. <br> Username inserito: ' + username + ' <br> Password inserita: ' + password + '.'); // Risponde con un messaggio di errore.
-    } // Chiude l'if-else.
-}); // Chiude la route POST /login.
-
-//post per la registrazione, senza persistenza
-app.post('/signup', (req, res) =>{             // Definisce la route POST per elaborare la registrazione.
-    const{username, password} = req.body;      // Estrae username e password dal corpo della richiesta.
-    res.send('Registrazione completata per: ' + username); // Risponde confermando la registrazione.
-}); // Chiude la route POST /signup.
 
 
 //definizione dello stato visualizzabile da prompt
