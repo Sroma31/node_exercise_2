@@ -35,3 +35,11 @@ body {                                         /* Selettore dell'elemento body. 
     font-size: 18px;                           /* Imposta la dimensione del font a 18 pixel. */
     color: #555;                               /* Imposta il colore del testo a grigio medio. */
 }                                              /* Chiude .container p. */
+
+.container img {                               /* Selettore dell'immagine dentro il container. */
+    max-width: 100%;                           /* L'immagine non supera la larghezza del container. */
+    height: auto;                              /* Mantiene le proporzioni originali. */
+    margin-top: 20px;                          /* Aggiunge spazio sopra l'immagine. */
+    border-radius: 12px;                       /* Arrotonda leggermente gli angoli. */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Aggiunge un'ombra morbida. */
+}                                              /* Chiude .container img. */
