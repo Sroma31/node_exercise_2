@@ -5,21 +5,24 @@ const fetch = require('node-fetch').default;
 const { getWeather } = require("../utils/apiclient");
 const { normalizeWeather } = require("../utils/normalizeWeather");
 const { validateCity } = require("../utils/validateCity");
-const { WEATHER_API_KEY } = require("../utils/constants");
+const { WEATHER_API_KEY } = require("../config/env");
 const { logError } = require("../utils/logger");
 
 exports.weatherController = async (req, res) => {
   const city = req.body.city;
 
+  console.log("DEBUG API KEY:", WEATHER_API_KEY); // Stampa la chiave API per il debug
+  console.log("DEBUG CITY:", city); // Stampa la città per il debug
+
   if (!validateCity(city)) {
-    return res.json({ error: true, message: "Citta non valida" });
+    return res.json({ error: true, message: "Citta' non valida" });
   }
 
   try {
     const data = await getWeather(city, WEATHER_API_KEY);
 
     if (data.cod !== 200) {
-      return res.json({ error: true, message: "Citt non trovata" });
+      return res.json({ error: true, message: "Citta' non trovata" });
     }
 
     return res.json(normalizeWeather(data));
