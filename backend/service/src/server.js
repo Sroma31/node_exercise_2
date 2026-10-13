@@ -1,9 +1,10 @@
 const express = require("express");              // Importa il framework Express.
 const path = require("path");                    // Importa il modulo per gestire i percorsi dei file.
 const app = express();                           // Crea l'applicazione Express.
-const port = 3000;                     // Definisce la porta del server.
 const bodyParser = require("body-parser");       // Importa il middleware per leggere il corpo delle richieste.
-require("dotenv").config(); // Carica le variabili d'ambiente dal file .env nella root del progetto.    
+require("dotenv").config();                      // Carica le variabili d'ambiente dal file .env nella root del progetto.
+const { PORT } = require("./utils/constants");   // Importa la porta dalle variabili d'ambiente.
+const port = PORT || 3000;                       // Usa la porta dall'env, altrimenti il default 3000.
 
 
 
