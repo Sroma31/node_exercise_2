@@ -3,7 +3,7 @@ document.getElementById("weather-form").addEventListener("submit", async functio
 
     const city = document.getElementById("city-input").value.trim();
 
-    const res = await fetch("/weather", {
+    const res = await fetch("/api/v1/weather", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ city })

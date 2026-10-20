@@ -26,7 +26,7 @@
             <h2>Weather API</h2>               <!-- Titolo. -->
             <p class="subtitle">Inserisci il nome della città per sapere le condizioni meteo</p> <!-- Istruzioni. -->
 
-            <form id="weather-form" action="/weather" method="POST"> <!-- Form meteo. -->
+            <form id="weather-form"> <!-- Form meteo. -->
                 <input type="text" id="city-input" name="city" placeholder="Nome della città" required> <!-- Input città. -->
                 <button type="submit">Invia</button> <!-- Pulsante. -->
             </form>                            <!-- Chiude form. -->
@@ -42,7 +42,7 @@
             .then(res => res.text())           // Testo.
             .then(html => document.getElementById("footer").innerHTML = html); // Inserisce.
     </script>                                  <!-- Chiude script. -->
-    <script src="/js/weather.js"></script>     <!-- JS meteo. -->
+    <script src="/api/v1/js/weather.js"></script>     <!-- JS meteo. -->
 </body>                                        <!-- Chiude body. -->
 
 </html>                                        <!-- Chiude HTML. -->
