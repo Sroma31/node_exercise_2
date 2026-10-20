@@ -5,16 +5,16 @@
     <meta charset="UTF-8">                     <!-- Codifica UTF-8. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
     <title>Home</title>                        <!-- Titolo della pagina. -->
-    <link rel="stylesheet" href="/css/index.css"> <!-- CSS Home. -->
-    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
-    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
+    <link rel="stylesheet" href="/api/v1/css/index.css"> <!-- CSS Home. -->
+    <link rel="stylesheet" href="/api/v1/css/navbar.css"> <!-- CSS navbar. -->
+    <link rel="stylesheet" href="/api/v1/css/footer.css"> <!-- CSS footer. -->
 </head>                                        <!-- Chiude head. -->
 
 <body>                                         <!-- Inizia il body. -->
 
     <div id="navbar">                          <!-- Div per la navbar. -->
         <script>                               //<!-- Script caricamento navbar. -->
-            fetch('/components/navbar.html')   //<!-- Scarica navbar.html. -->
+            fetch('/api/v1/components/navbar.html')   //<!-- Scarica navbar.html. -->
                 .then(response => response.text()) // Converte in testo.
                 .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce nel div.
         </script>                              <!-- Chiude script. -->
@@ -23,13 +23,13 @@
     <div class="container">                    <!-- Contenuto principale. -->
         <h1>Shalom</h1>             <!-- Titolo. -->
         <p>I love palestine</p> <!-- Paragrafo. -->
-        <img src="/assets/Benjamin_Netanyahu,_February_2023.jpg" alt="benji">
+        <img src="/api/v1/assets/Benjamin_Netanyahu,_February_2023.jpg" alt="benji">
     
     </div>                                     <!-- Chiude container. -->
 
     <div id="footer">                          <!-- Div per il footer. -->
         <script>                               //<!-- Script caricamento footer. -->
-            fetch('/components/footer.html')   //<!-- Scarica footer.html. -->
+            fetch('/api/v1/components/footer.html')   //<!-- Scarica footer.html. -->
                 .then(response => response.text()) // Converte in testo.
                 .then(html => document.getElementById('footer').innerHTML = html); // Inserisce nel div.
         </script>                              <!-- Chiude script. -->

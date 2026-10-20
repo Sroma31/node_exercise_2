@@ -1,4 +1,4 @@
-const fetch = require("node-fetch").default;
+const fetch = require("node-fetch");
 
 async function getWeather(city, apiKey) {
     const response = await fetch(

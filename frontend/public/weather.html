@@ -5,9 +5,9 @@
     <meta charset="UTF-8">                     <!-- UTF-8. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
     <title>Weather API</title>                 <!-- Titolo. -->
-    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
-    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
-    <link rel="stylesheet" href="/css/weather.css"> <!-- CSS weather. -->
+    <link rel="stylesheet" href="/api/v1/css/navbar.css"> <!-- CSS navbar. -->
+    <link rel="stylesheet" href="/api/v1/css/footer.css"> <!-- CSS footer. -->
+    <link rel="stylesheet" href="/api/v1/css/weather.css"> <!-- CSS weather. -->
 </head>                                        <!-- Chiude head. -->
 
 <body>                                         <!-- Body. -->
@@ -15,7 +15,7 @@
     <!-- NAVBAR -->                            <!-- Inizio navbar. -->
     <div id="navbar"></div>                    <!-- Div navbar. -->
     <script>                                   //<!-- Caricamento navbar. -->
-        fetch("/components/navbar.html")       //<!-- Scarica navbar. -->
+        fetch("/api/v1/components/navbar.html")       //<!-- Scarica navbar. -->
             .then(res => res.text())           // Testo.
             .then(html => document.getElementById("navbar").innerHTML = html); // Inserisce.
     </script>                                  <!-- Chiude script. -->
@@ -38,7 +38,7 @@
     <!-- FOOTER -->                            <!-- Inizio footer. -->
     <div id="footer"></div>                    <!-- Div footer. -->
     <script>                                   //<!-- Caricamento footer. -->
-        fetch("/components/footer.html")       //<!-- Scarica footer. -->
+        fetch("/api/v1/components/footer.html")       //<!-- Scarica footer. -->
             .then(res => res.text())           // Testo.
             .then(html => document.getElementById("footer").innerHTML = html); // Inserisce.
     </script>                                  <!-- Chiude script. -->
