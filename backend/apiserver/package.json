@@ -1,0 +1,14 @@
+{
+  "name": "apiserver",
+  "version": "1.0.0",
+  "description": "API server che espone i servizi sotto /api/v1 e li inoltra al backend service",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.7",
+    "express": "^4.21.1",
+    "http-proxy-middleware": "^4.2.0"
+  }
+}
