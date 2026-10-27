@@ -16,7 +16,14 @@ const app = express();
 /*quindi questi per esempio sono quelli veri del service: http://localhost:3000/signin,
 questi quelli mascherati http://localhost:4000/api/v1/signin*/
 
-
+app.use("/api/v1/wanted", createProxyMiddleware({
+  // pathFilter: pathname => pathname === "/api/v1/wanted" ||
+  target: config.WANTED_SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    "^/api/v1/wanted": ""
+  }
+}));
 
 app.use("/api/v1", createProxyMiddleware({
   target: config.SERVICE_URL,

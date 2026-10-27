@@ -1,0 +1,35 @@
+/* Stili specifici per la scheda FBI; gli stili di base sono in weather.css. */
+.fbi-wrapper {
+    padding: 24px 16px;
+}
+
+.fbi-box {
+    width: min(760px, 100%);
+}
+
+.fbi-box h1 {
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.fbi-image {
+    display: block;
+    max-width: 100%;
+    max-height: 480px;
+    margin: 20px auto;
+    object-fit: contain;
+}
+
+.fbi-description {
+    margin: 16px 0;
+    white-space: pre-line;
+    text-align: left;
+}
+
+#fbi-result a {
+    display: inline-block;
+    margin-top: 12px;
+    color: #154f91;
+}
+
+
