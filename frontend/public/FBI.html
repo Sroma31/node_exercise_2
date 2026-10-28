@@ -1,44 +1,41 @@
-
-
-<!Doctype html>
+<!DOCTYPE html>
 <html lang="it">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width device-width, initial-scale-1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scheda FBI del giorno</title>
 
-    <link rel="stylesheet" href="css/navbar.css">
-    <link rel="stylesheet" href="css/footer.css">
-    <link rel="stylesheet" href="css/weather.css">
-    <link rel="stylesheet" href="css/fbi.css">
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+    <link rel="stylesheet" href="/api/v1/css/weather.css">
+    <link rel="stylesheet" href="/api/v1/css/fbi.css">
 </head>
 
 <body>
-    <!-- La barra di navigazione e condivisa con le altre pagine. -->
+    <!-- La barra di navigazione è condivisa con le altre pagine. -->
     <div id="navbar"></div>
     <script>
-        fetch("components/navbar.html")
-        .then(response => response.text())
-        .then(html => document.getElementById("navbar").innerHTML = html);
+        fetch("/api/v1/components/navbar.html")
+            .then(response => response.text())
+            .then(html => document.getElementById("navbar").innerHTML = html);
     </script>
-
 
     <main class="weather-wrapper fbi-wrapper">
         <section class="weather-box fbi-box">
-            <h1>Scheda FBI.del giorno</h1>
-            <p class="subtitle">Una persona ricercata o una segnalazione dall'elenco pubblico FBI .</p>
-            <div id="fbi-result" aria-live="polite">Caricamento ...< /div>
+            <h1>Scheda FBI del giorno</h1>
+            <p class="subtitle">Una persona ricercata o una segnalazione dall'elenco pubblico FBI.</p>
+            <div id="fbi-result" aria-live="polite">Caricamento ...</div>
         </section>
     </main>
 
-    <!-- Anche il pie di pagina è condiviso con le altre pagine. -->
+    <!-- Anche il piè di pagina è condiviso con le altre pagine. -->
     <div id="footer"></div>
-        <script>
-            fetch("components/footer.html")
-            then(response => response.text())
+    <script>
+        fetch("/api/v1/components/footer.html")
+            .then(response => response.text())
             .then(html => document.getElementById("footer").innerHTML = html);
-        </script>
-        <script src="js/fbi.js"></script>
+    </script>
+    <script src="/api/v1/js/FBI.js"></script>
 </body>
 </html>

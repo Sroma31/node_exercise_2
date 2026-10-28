@@ -2,11 +2,10 @@ const express = require("express");              // Importa il framework Express
 const path = require("path");                    // Importa il modulo per gestire i percorsi dei file.
 const app = express();                           // Crea l'applicazione Express.
 const bodyParser = require("body-parser");       // Importa il middleware per leggere il corpo delle richieste.
-require("dotenv").config();                      // Carica le variabili d'ambiente dal file .env nella root del progetto.
+require("dotenv").config({ path: path.join(__dirname, "../.env") }); // Carica le variabili d'ambiente dal file .env nel service.
+require("dotenv").config();
 const { PORT } = require("./utils/constants");   // Importa la porta dalle variabili d'ambiente.
 const port = PORT || 3000;                       // Usa la porta dall'env, altrimenti il default 3000.
-
-
 
 // il body parser serve per leggere i dati inviati dal form
 app.use(bodyParser.json());                    // Abilita la lettura del corpo in formato JSON.
@@ -26,17 +25,8 @@ app.use("/", signinRoutes); // Usa le routes definite in signin.js per gestire l
 
 app.use(express.static(path.join(__dirname, "../../../frontend/public"))); // Serve i file statici della cartella public.
 
-
-
-
 //definizione dello stato visualizzabile da prompt
-app.listen(port, ()=> {                        // Avvia il server sulla porta definita.
-console.log("Server in ascolto alla porta " + port); // Scrive in console la porta di ascolto.
-console.log('accedi all indirizzo http://localhost:'+port) // Scrive in console l'indirizzo da aprire nel browser.
-}); // Chiude il metodo listen.
-
-
-
-
-
-
+app.listen(port, () => {                        // Avvia il server sulla porta definita.
+    console.log("Server in ascolto alla porta " + port); // Scrive in console la porta di ascolto.
+    console.log("accedi all indirizzo http://localhost:" + port); // Scrive in console l'indirizzo da aprire nel browser.
+});

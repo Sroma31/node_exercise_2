@@ -1,0 +1,5 @@
+backend/auth-service/node_modules/
+**/__pycache__/
+*.pyc
+.codegraph/
+.projectmem/

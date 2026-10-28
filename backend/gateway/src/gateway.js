@@ -5,7 +5,6 @@ const app = express();
 // Proxy verso il service
 // l'utente vede e digita /api/v1/... mentre il servizio riceve solo /...
 
-
 //quello che si ottiene qui è l'api versioning + endpoint hiding -- > convenzione goole, paypall, github microsoft ecc
 //significa che l'utente vede e digita per il servizio /api/v1/ (es: /api/v1/weather per accedere al weather service)
 //in realta la parte finale è estratta dal servizio proxy per il pathrewrite ed il service vede solo /weather
@@ -15,6 +14,14 @@ const app = express();
 
 /*quindi questi per esempio sono quelli veri del service: http://localhost:3000/signin,
 questi quelli mascherati http://localhost:4000/api/v1/signin*/
+
+app.use("/api/v1/auth", createProxyMiddleware({
+  target: config.AUTH_SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    "^/api/v1/auth": ""
+  }
+}));
 
 app.use("/api/v1/wanted", createProxyMiddleware({
   // pathFilter: pathname => pathname === "/api/v1/wanted" ||
@@ -32,6 +39,7 @@ app.use("/api/v1", createProxyMiddleware({
     "^/api/v1": ""
   }
 }));
+
 app.listen(config.GATEWAY_PORT, () => {
   console.log(`Gateway attivo su http://localhost:${config.GATEWAY_PORT}/api/v1`);
 });

@@ -1,11 +1,12 @@
-require ("dotenv").config(); // Carica le variabili d'ambiente dal file .env nella root del progetto.
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
+require("dotenv").config();
 
 //Lista delle variabili obbligatorie
 const requiredEnvVars = [
     "WEATHER_API_KEY", // Chiave API per il servizio meteo
     "PORT", // Porta su cui il server ascolta
 ];
-
 
 requiredEnvVars.forEach(key => {
     if (!process.env[key]) {

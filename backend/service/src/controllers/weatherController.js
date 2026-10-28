@@ -1,4 +1,3 @@
-
 const { getWeather } = require("../utils/apiclient");
 const { normalizeWeather } = require("../utils/normalizeWeather");
 const { validateCity } = require("../utils/validateCity");
@@ -18,13 +17,16 @@ exports.weatherController = async (req, res) => {
   try {
     const data = await getWeather(city, WEATHER_API_KEY);
 
-    if (data.cod !== 200) {
+    if (String(data.cod) !== "200") {
       return res.json({ error: true, message: "Citta' non trovata" });
     }
 
     return res.json(normalizeWeather(data));
   } catch (err) {
     logError(err);
+    if (err && err.status === 404) {
+      return res.json({ error: true, message: "Citta' non trovata" });
+    }
     return res.json({ error: true, message: "Errore nel server" });
   }
 };
