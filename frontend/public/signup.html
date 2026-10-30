@@ -1,44 +1,47 @@
-<!DOCTYPE html>                                <!-- HTML5. -->
-<html lang="it">                               <!-- Italiano. -->
+<!DOCTYPE html>
+<html lang="it">
 
-<head>                                         <!-- Head. -->
-    <meta charset="UTF-8">                     <!-- UTF-8. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
-    <title>Sign Up</title>                     <!-- Titolo. -->
-    <link rel="stylesheet" href="/api/v1/css/signup.css"> <!-- CSS signup. -->
-    <link rel="stylesheet" href="/api/v1/css/navbar.css"> <!-- CSS navbar. -->
-    <link rel="stylesheet" href="/api/v1/css/footer.css"> <!-- CSS footer. -->
-</head>                                        <!-- Chiude head. -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/api/v1/css/signup.css">
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+</head>
 
-<body>                                         <!-- Body. -->
+<body>
 
-    <div id="navbar">                          <!-- Div navbar. -->
-        <script>                               //<!-- Caricamento navbar. -->
-            fetch('/api/v1/components/navbar.html')   //<!-- Scarica navbar. -->
-                .then(response => response.text()) // Testo.
-                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce.
-        </script>                              <!-- Chiude script. -->
-    </div>                                     <!-- Chiude div. -->
+    <!-- Contenitore Navbar condivisa -->
+    <div id="navbar">
+        <script>
+            fetch('/api/v1/components/navbar.html')
+                .then(response => response.text())
+                .then(html => document.getElementById('navbar').innerHTML = html);
+        </script>
+    </div>
 
-    <div class="signup-wrapper">               <!-- Wrapper per centrare. -->
-        <div class="signup-box">               <!-- Box form. -->
-            <h2>Sign Up</h2>                   <!-- Titolo form. -->
-            <form action="/api/v1/signup" method="POST"> <!-- Form invio a /api/v1/signup. -->
-                <input type="text" name="username" placeholder="Username" required> <!-- Username. -->
-                <input type="password" name="password" placeholder="Password" required> <!-- Password. -->
-                <button type="submit">Registrati</button> <!-- Pulsante. -->
-            </form>                            <!-- Chiude form. -->
-        </div>                                 <!-- Chiude box. -->
-    </div>                                     <!-- Chiude wrapper. -->
+    <!-- Modulo di registrazione utente (POST verso il Gateway) -->
+    <div class="signup-wrapper">
+        <div class="signup-box">
+            <h2>Sign Up</h2>
+            <form action="/api/v1/signup" method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Registrati</button>
+            </form>
+        </div>
+    </div>
 
-    <div id="footer">                          <!-- Div footer. -->
-        <script>                               //<!-- Caricamento footer. -->
-            fetch('/api/v1/components/footer.html')   //<!-- Scarica footer. -->
-                .then(response => response.text()) // Testo.
-                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce.
-        </script>                              <!-- Chiude script. -->
-    </div>                                     <!-- Chiude div. -->
+    <!-- Contenitore Footer condiviso -->
+    <div id="footer">
+        <script>
+            fetch('/api/v1/components/footer.html')
+                .then(response => response.text())
+                .then(html => document.getElementById('footer').innerHTML = html);
+        </script>
+    </div>
 
-</body>                                        <!-- Chiude body. -->
+</body>
 
-</html>                                        <!-- Chiude HTML. -->
+</html>

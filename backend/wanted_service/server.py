@@ -9,6 +9,8 @@ from urllib.request import Request, urlopen
 from utils.converter import item_to_json
 
 FBI_API_URL = "https://api.fbi.gov/wanted/v1/list"
+
+# Caricamento variabili d'ambiente da .env locale (se presente)
 env_file = Path(__file__).resolve().parent / ".env"
 if env_file.exists():
     with open(env_file, "r", encoding="utf-8") as f:
@@ -23,7 +25,11 @@ PUBLIC_DIR = Path(__file__).resolve().parents[2] / "frontend" / "public"
 
 
 def get_daily_item():
-    # User-Agent identifica il servizio; Accept dichiara che vogliamo dati JSON.
+    """
+    Interroga l'API pubblica dell'FBI per estrarre la lista dei ricercati.
+    Seleziona deterministicamente la scheda del giorno in base alla data odierna,
+    privilegiando i soggetti contrassegnati con poster_classification 'wanted'.
+    """
     request = Request(
         FBI_API_URL,
         headers={
@@ -33,46 +39,44 @@ def get_daily_item():
     )
 
     try:
-        # timeout evita di lasciare la richiesta bloccata se l'API non risponde.
         with urlopen(request, timeout=10) as response:
             payload = json.load(response)
-            print("payload: ", payload)  # Scrivo sulla console il payload in risposta
-
     except Exception as error:
         raise RuntimeError("Impossibile contattare l'API FBI.") from error
 
-    # L'API restituisce le schede nella proprietà "items".
     items = payload.get("items") if isinstance(payload, dict) else None
-
     if not isinstance(items, list):
         raise RuntimeError("La risposta dell'API FBI non contiene una lista valida.")
 
     valid_items = [item for item in items if isinstance(item, dict)]
-    print("valid_items: ", valid_items)
-    # Persona ricercata e non catturata (more funny).
+
+    # Filtra solo i soggetti ricercati attivi
     wanted_items = [
         item
         for item in valid_items
         if str(item.get("poster_classification", "")).lower() == "wanted"
     ]
 
-    # Se non ne troviamo, usiamo una scheda disponibile qualsiasi.
     candidates = wanted_items or valid_items
-
     if not candidates:
         raise RuntimeError("L'API FBI non ha restituito schede disponibili.")
 
-    # La data fa sì che tutti vedano la stessa scheda durante il giorno.
+    # Algoritmo deterministico giornaliero: stesso soggetto per tutti gli utenti nella stessa data
     return candidates[(date.today().toordinal() - 1) % len(candidates)]
 
 
 class WantedHandler(SimpleHTTPRequestHandler):
+    """
+    Gestore HTTP per il servizio Wanted:
+    - Serve i file statici della cartella frontend/public
+    - GET / o vuoto: serve FBI.html
+    - GET /api/wanted/today: restituisce la scheda del ricercato del giorno in JSON
+    """
+
     def __init__(self, *args, **kwargs):
-        # Il server usa la cartella pubblica del frontend per pagina, CSS e JavaScript.
         super().__init__(*args, directory=str(PUBLIC_DIR), **kwargs)
 
     def send_content(self, content, content_type, status=200):
-        # Content-Type dice al browser come interpretare la risposta.
         encoded = content.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", content_type)
@@ -82,11 +86,10 @@ class WantedHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
-        # La root del servizio mostra la pagina FBI.
+
         if path in ("/", ""):
             self.path = "/FBI.html"
 
-        # Questo endpoint restituisce i dati che fbi.js inserisce nella pagina.
         if path == "/api/wanted/today":
             try:
                 person = item_to_json(get_daily_item())
@@ -104,6 +107,5 @@ class WantedHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"wanted service avviato su http://localhost:{PORT}", flush=True)
-    # HTTP SERVER RESTA IN ASCOLTO
+    print(f"Wanted service avviato su http://localhost:{PORT}", flush=True)
     HTTPServer(("0.0.0.0", PORT), WantedHandler).serve_forever()

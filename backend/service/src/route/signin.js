@@ -1,8 +1,12 @@
-const express = require("express"); // Importa il framework Express.
-const router = express.Router(); // Crea un router Express per raggruppare le rotte.
+const express = require("express");
+const { signinController } = require("../controllers/signincontroller");
 
-const { signinController } = require("../controllers/signincontroller"); // Importa la funzione getWeather dal controller.
+const router = express.Router();
 
-router.post("/signup", signinController); // Associa la route POST /signup alla funzione del controller.
+/**
+ * Route POST per la registrazione utente.
+ * Riceve i dati inviati dal form di registrazione in signup.html.
+ */
+router.post("/signup", signinController);
 
-module.exports = router; // Esporta il router per essere usato nel server.
+module.exports = router;

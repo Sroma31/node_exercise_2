@@ -1,20 +1,24 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const config = require("../config/env");
+
 const app = express();
-// Proxy verso il service
-// l'utente vede e digita /api/v1/... mentre il servizio riceve solo /...
 
-//quello che si ottiene qui è l'api versioning + endpoint hiding -- > convenzione goole, paypall, github microsoft ecc
-//significa che l'utente vede e digita per il servizio /api/v1/ (es: /api/v1/weather per accedere al weather service)
-//in realta la parte finale è estratta dal servizio proxy per il pathrewrite ed il service vede solo /weather
-//significa nascondere gli endpoint all'utente con l'introduzione di eleemnti non facolemnte risalibili
-//vanno cambiati anche endpoint della pagina statica nav che ridefinisce i percorsi nascosti e nel file
-// weather.js che costituisce il dom js ///// va infine modificato il post togliendo l'action per delegare l'azione di redirect al gateway
+/**
+ * API GATEWAY & REVERSE PROXY
+ *
+ * Ruoli e pattern implementati:
+ * 1. API Versioning: espone tutte le risorse sotto il prefisso comune /api/v1/.
+ * 2. Endpoint Hiding: maschera gli indirizzi e le porte interne dei singoli microservizi.
+ *    Il client contatta solo il gateway (es. http://localhost:4000/api/v1/weather)
+ *    e il proxy riscrive l'URL inoltrando la richiesta al service (es. http://localhost:3000/weather).
+ * 3. Routing verso i microservizi:
+ *    - /api/v1/auth   -> Auth Service (porta 3001)
+ *    - /api/v1/wanted -> Wanted Service FBI Python (porta 3002)
+ *    - /api/v1        -> Main Service Node/Express (porta 3000)
+ */
 
-/*quindi questi per esempio sono quelli veri del service: http://localhost:3000/signin,
-questi quelli mascherati http://localhost:4000/api/v1/signin*/
-
+// Proxy verso Auth Service (autenticazione / login Google)
 app.use("/api/v1/auth", createProxyMiddleware({
   target: config.AUTH_SERVICE_URL,
   changeOrigin: true,
@@ -23,8 +27,8 @@ app.use("/api/v1/auth", createProxyMiddleware({
   }
 }));
 
+// Proxy verso Wanted Service (scheda giornaliera FBI in Python)
 app.use("/api/v1/wanted", createProxyMiddleware({
-  // pathFilter: pathname => pathname === "/api/v1/wanted" ||
   target: config.WANTED_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: {
@@ -32,6 +36,7 @@ app.use("/api/v1/wanted", createProxyMiddleware({
   }
 }));
 
+// Proxy predefinito verso il Main Service (pagine HTML statiche, meteo, form)
 app.use("/api/v1", createProxyMiddleware({
   target: config.SERVICE_URL,
   changeOrigin: true,

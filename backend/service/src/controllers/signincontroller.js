@@ -1,9 +1,14 @@
-exports.signinController = (req, res) => {             // Definisce la route POST per elaborare la registrazione.
-    const { username, password } = req.body;      // Estrae username e password dal corpo della richiesta.
+/**
+ * Controller di registrazione (versione mock/didattica).
+ * Valida la presenza e il tipo dei campi obbligatori (username, password)
+ * e restituisce la conferma di avvenuta registrazione senza salvataggio persistente.
+ */
+exports.signinController = (req, res) => {
+    const { username, password } = req.body;
 
     if (!username || !password || typeof username !== "string" || typeof password !== "string") {
         return res.status(400).send("Username e password sono obbligatori.");
     }
 
-    res.send('Registrazione completata per: ' + username); // Risponde confermando la registrazione.
-}; // Chiude la route POST /signup.
+    res.send("Registrazione completata per: " + username);
+};

@@ -1,8 +1,12 @@
-const express = require("express"); // Importa il framework Express.
-const router = express.Router(); // Crea un router Express per raggruppare le rotte.
+const express = require("express");
+const { login } = require("../controllers/authcontroller");
 
-const { login } = require("../controllers/authcontroller"); // Importa la funzione getWeather dal controller.
+const router = express.Router();
 
-router.post("/login", login); // Associa la route POST /login alla funzione del controller.
+/**
+ * Route POST per l'autenticazione utente.
+ * Riceve username e password inviati dal form di login.
+ */
+router.post("/login", login);
 
-module.exports = router; // Esporta il router per essere usato nel server.
+module.exports = router;

@@ -1,5 +1,11 @@
+/**
+ * Logica client-side per la pagina Meteo (weather.html).
+ * - Intercetta l'evento di invio del form evitando il reload della pagina (e.preventDefault).
+ * - Invia una richiesta POST asincrona in formato JSON all'endpoint Gateway /api/v1/weather.
+ * - Renderizza nel DOM l'esito della chiamata (scheda meteo completa oppure messaggio di errore).
+ */
 document.getElementById("weather-form").addEventListener("submit", async function(e) {
-    e.preventDefault(); // evita il redirect
+    e.preventDefault();
 
     const city = document.getElementById("city-input").value.trim();
 
@@ -10,7 +16,6 @@ document.getElementById("weather-form").addEventListener("submit", async functio
     });
 
     const data = await res.json();
-
     const resultBox = document.getElementById("weather-result");
 
     if (data.error) {
