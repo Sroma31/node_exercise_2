@@ -1,7 +1,7 @@
 {
-  "name": "apiserver",
+  "name": "auth_service",
   "version": "1.0.0",
-  "description": "API server che espone i servizi sotto /api/v1 e li inoltra al backend service",
+  "description": "Auth service per la gestione dell'autenticazione",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js"

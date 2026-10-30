@@ -1,6 +1,6 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
-const { GATEWAY_PORT, SERVICE_URL, API_SERVER_URL } = require("../config/env");
+const { GATEWAY_PORT, SERVICE_URL, AUTH_SERVICE_URL } = require("../config/env");
 
 const app = express();
 
@@ -13,17 +13,19 @@ const serviceProxy = createProxyMiddleware({
     logger: console
 });
 
-const apiProxy = createProxyMiddleware({
-    target: API_SERVER_URL,
+const authProxy = createProxyMiddleware({
+    target: AUTH_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: {
+        "^/auth": "",
         "^/api": ""
     },
     logger: console
 });
 
 app.use("/api/v1", serviceProxy);
-app.use("/api", apiProxy);
+app.use("/auth", authProxy);
+app.use("/api", authProxy);
 
 app.get("/", (req, res) => {
     res.redirect("/api/v1/");
@@ -32,6 +34,6 @@ app.get("/", (req, res) => {
 app.listen(GATEWAY_PORT, () => {
     console.log("Gateway in ascolto sulla porta " + GATEWAY_PORT);
     console.log("Service: " + SERVICE_URL + " (prefisso /api/v1)");
-    console.log("API server: " + API_SERVER_URL + " (prefisso /api)");
+    console.log("Auth service: " + AUTH_SERVICE_URL + " (prefisso /auth)");
     console.log("Accedi all'indirizzo http://localhost:" + GATEWAY_PORT + "/api/v1/");
 });
