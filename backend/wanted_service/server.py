@@ -9,6 +9,15 @@ from urllib.request import Request, urlopen
 from utils.converter import item_to_json
 
 FBI_API_URL = "https://api.fbi.gov/wanted/v1/list"
+env_file = Path(__file__).resolve().parent / ".env"
+if env_file.exists():
+    with open(env_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, val = line.split("=", 1)
+                os.environ.setdefault(key.strip(), val.strip())
+
 PORT = int(os.environ.get("WANTED_PORT", "3002"))
 PUBLIC_DIR = Path(__file__).resolve().parents[2] / "frontend" / "public"
 

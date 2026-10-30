@@ -1,5 +1,14 @@
+# Environment variables
+.env
+*.env
+**/.env
+
+# Dependencies & caches
 backend/auth-service/node_modules/
+**/node_modules/
 **/__pycache__/
 *.pyc
+
+# Local project tooling
 .codegraph/
 .projectmem/
