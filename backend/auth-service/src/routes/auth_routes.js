@@ -1,26 +1,50 @@
 const express = require("express");
+const passport = require("passport");
 
 const router = express.Router();
 
 /**
- * Rotte di gestione autenticazione:
- * - GET /login: avvia il flusso di login (es. redirect OAuth Google)
- * - GET /validate: verifica se la sessione corrente o il token è autenticato
- * - GET /logout: invalida la sessione o elimina i cookie di autenticazione
+ * Authentication routes:
+ * - GET /login:                  Redirects to Google OAuth flow
+ * - GET /auth/google:            Initiates Google OAuth authentication
+ * - GET /auth/google/callback:   Handles the Google OAuth callback
+ * - GET /validate:               Checks if the current session is authenticated
+ * - GET /logout:                 Destroys the session and logs the user out
  */
 
+// Redirect /login to Google OAuth
 router.get("/login", (req, res) => {
-    res.send("Login Google");
+    res.redirect("/google");
 });
 
+// Initiate Google OAuth flow (requests profile and email scopes)
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+// Handle Google OAuth callback
+router.get(
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/login" }),
+    (req, res) => {
+        // Successful authentication – redirect to home or dashboard
+        res.redirect("/");
+    }
+);
+
+// Validate whether the current session is authenticated
 router.get("/validate", (req, res) => {
-    res.json({
-        authenticated: false
-    });
+    if (req.isAuthenticated()) {
+        res.json({ authenticated: true, user: req.user });
+    } else {
+        res.json({ authenticated: false });
+    }
 });
 
+// Logout: destroy the session and redirect to login
 router.get("/logout", (req, res) => {
-    res.send("Logout");
+    req.logout((err) => {
+        if (err) return res.status(500).json({ error: "Logout failed" });
+        res.redirect("/login");
+    });
 });
 
 module.exports = router;
