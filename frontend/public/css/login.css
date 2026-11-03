@@ -39,6 +39,43 @@ body {
     font-weight: 600;
 }
 
+/* ===== Campi di input del modulo ===== */
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 18px 0;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+}
+
+.login-box input:focus {
+    border-color: #0078ff;
+    outline: none;
+}
+
+/* ===== Pulsante di invio ===== */
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    background: #0078ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.1s;
+}
+
+.login-box button:hover {
+    background: #005fcc;
+}
+
+.login-box button:active {
+    transform: scale(0.98);
+}
+
 /* ===== Animazione di entrata dal basso verso l'alto ===== */
 @keyframes fadeIn {
     from {
@@ -49,6 +86,27 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* ===== Divisore OR ===== */
+.or-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #aaa;
+    font-size: 13px;
+}
+
+.or-divider::before,
+.or-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+}
+
+.or-divider span {
+    padding: 0 10px;
 }
 
 /* ===== Pulsante Login con Google ===== */
