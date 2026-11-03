@@ -12,14 +12,8 @@
 
 <body>
 
-    <!-- Contenitore Navbar: popolato dinamicamente con il componente condiviso navbar.html -->
-    <div id="navbar">
-        <script>
-            fetch('/api/v1/components/navbar.html')
-                .then(response => response.text())
-                .then(html => document.getElementById('navbar').innerHTML = html);
-        </script>
-    </div>
+    <!-- Contenitore Navbar: popolato da auth.js -->
+    <div id="navbar"></div>
 
     <!-- Contenitore principale della Home page -->
     <div class="container">
@@ -27,15 +21,10 @@
         <p>This is the home page of your application.</p>
     </div>
 
-    <!-- Contenitore Footer: popolato dinamicamente con il componente condiviso footer.html -->
-    <div id="footer">
-        <script>
-            fetch('/api/v1/components/footer.html')
-                .then(response => response.text())
-                .then(html => document.getElementById('footer').innerHTML = html);
-        </script>
-    </div>
+    <!-- Contenitore Footer: popolato da auth.js -->
+    <div id="footer"></div>
 
+    <script src="/api/v1/js/auth.js"></script>
 </body>
 
 </html>

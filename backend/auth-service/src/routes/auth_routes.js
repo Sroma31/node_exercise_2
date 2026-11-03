@@ -1,12 +1,13 @@
 const express = require("express");
 const passport = require("passport");
+const env = require("../../config/env");
 
 const router = express.Router();
 
 /**
  * Authentication routes:
  * - GET /login:                  Redirects to Google OAuth flow
- * - GET /auth/google:            Initiates Google OAuth authentication
+ * - GET /google:                 Initiates Google OAuth authentication
  * - GET /auth/google/callback:   Handles the Google OAuth callback
  * - GET /validate:               Checks if the current session is authenticated
  * - GET /logout:                 Destroys the session and logs the user out
@@ -23,10 +24,10 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 // Handle Google OAuth callback
 router.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login" }),
+    passport.authenticate("google", { failureRedirect: "/login", session: true }),
     (req, res) => {
-        // Successful authentication – redirect to home or dashboard
-        res.redirect("/");
+        // Successful authentication – redirect to frontend (session carries the user)
+        res.redirect(env.FRONTEND_URL);
     }
 );
 
@@ -39,11 +40,11 @@ router.get("/validate", (req, res) => {
     }
 });
 
-// Logout: destroy the session and redirect to login
+// Logout: destroy the session and redirect to the frontend login page
 router.get("/logout", (req, res) => {
     req.logout((err) => {
         if (err) return res.status(500).json({ error: "Logout failed" });
-        res.redirect("/login");
+        res.redirect(env.FRONTEND_URL + "login");
     });
 });
 

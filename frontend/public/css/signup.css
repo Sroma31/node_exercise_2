@@ -87,3 +87,58 @@ body {
         transform: translateY(0);
     }
 }
+
+/* ===== Divisore OR ===== */
+.or-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #aaa;
+    font-size: 13px;
+}
+
+.or-divider::before,
+.or-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+}
+
+.or-divider span {
+    padding: 0 10px;
+}
+
+/* ===== Pulsante Registrati con Google ===== */
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background: #ffffff;
+    color: #444;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.25s, box-shadow 0.25s, transform 0.1s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-google img {
+    width: 22px;
+    height: 22px;
+}
+
+.btn-google:hover {
+    background: #f5f5f5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-google:active {
+    transform: scale(0.98);
+}

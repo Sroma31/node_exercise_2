@@ -2,6 +2,7 @@
   Componente di navigazione condiviso.
   Viene caricato asincronamente tramite fetch() all'interno del contenitore #navbar di ciascuna pagina.
   Tutti i link utilizzano il prefisso del Gateway /api/v1/ per garantire il corretto instradamento.
+  Gli elementi #nav-login-link e #nav-logout-link vengono mostrati/nascosti da auth.js in base alla sessione.
 -->
 <nav class="navbar">
     <div class="nav-logo">My App</div>
@@ -13,6 +14,12 @@
         <li><a href="/api/v1/wanted/">FBI wanted</a></li>
         <li><a href="/api/v1/weather">Weather</a></li>
         <li><a href="/api/v1/signup">Signup</a></li>
-        <li><a href="/api/v1/login">Login</a></li>
+        <li id="nav-login-item"><a href="/api/v1/login">Login</a></li>
+        <li id="nav-user-item" style="display:none;">
+            <span id="nav-user" style="color:#4caf50;font-weight:bold;"></span>
+        </li>
+        <li id="nav-logout-item" style="display:none;">
+            <a href="/api/v1/auth/logout" style="color:#e53935;">Logout</a>
+        </li>
     </ul>
 </nav>
