@@ -1,6 +1,6 @@
 # Node Exercise 2
 
-Applicazione web full-stack basata su un'architettura a **microservizi** con **API Gateway**, frontend modulare in HTML/CSS/JavaScript vanilla e servizi backend in Node.js e Python.
+Applicazione web full-stack basata su un'architettura a **microservizi** con **API Gateway**, frontend modulare in HTML5/CSS3/JavaScript vanilla e servizi backend in Node.js e Python.
 
 ---
 
@@ -13,7 +13,7 @@ Il flusso di comunicazione delle richieste segue lo schema:
         │
         ▼
 [API Gateway (Porta 4000)]
-   ├── /api/v1/auth   ──► [Auth Service (Node.js: Porta 3001)] (Google OAuth 2.0 / Passport)
+   ├── /api/v1/auth   ──► [Auth Service (Node.js: Porta 3001)] (Google OAuth 2.0 / Passport / Sessioni)
    ├── /api/v1/wanted ──► [Wanted Service (Python: Porta 3002)] (FBI Wanted API)
    └── /api/v1        ──► [Main Service (Node.js: Porta 3000)] (Meteo & Pagine statiche)
 ```
@@ -22,11 +22,11 @@ Il flusso di comunicazione delle richieste segue lo schema:
 
 | Componente | Directory | Tecnologia | Porta | Descrizione |
 |---|---|---|---|---|
-| **API Gateway** | `backend/gateway` | Node.js, Express, `http-proxy-middleware` | `4000` | Reverse proxy unificato, versioning API (`/api/v1/`), rate limiting, caching e mascheramento delle porte interne. |
-| **Auth Service** | `backend/auth-service` | Node.js, Express, Passport.js | `3001` | Gestione delle sessioni e autenticazione social con Google OAuth 2.0. |
-| **Main Service** | `backend/service` | Node.js, Express | `3000` | Logica applicativa meteo (integrazione OpenWeather API), form e routing pagine. |
-| **Wanted Service** | `backend/wanted_service` | Python | `3002` | Microservizio per il recupero e la formattazione dei dati dell'API FBI Wanted. |
-| **Frontend** | `frontend/public` | HTML5, CSS3, JS Vanilla | - | Pagine interattive (Home, Meteo, FBI, Login, Signup, About, Contact) con componenti modulari. |
+| **API Gateway** | `backend/gateway` | Node.js, Express, `http-proxy-middleware` | `4000` | Reverse proxy unificato, versioning API (`/api/v1/`), mascheramento delle porte interne e routing verso i microservizi. |
+| **Auth Service** | `backend/auth-service` | Node.js, Express, Passport.js, `express-session` | `3001` | Gestione delle sessioni e autenticazione social con Google OAuth 2.0. Endpoint `/google`, `/google/callback` (alias `/auth/google/callback`), `/me`, `/validate`, `/logout`. |
+| **Main Service** | `backend/service` | Node.js, Express | `3000` | Logica applicativa meteo (integrazione OpenWeather API), form HTML e servizio file statici. |
+| **Wanted Service** | `backend/wanted_service` | Python 3 (`http.server`, `urllib`) | `3002` | Microservizio per il recupero, la sanitizzazione e la formattazione giornaliera dei dati dell'API FBI Wanted. |
+| **Frontend** | `frontend/public` | HTML5, CSS3, JS Vanilla | - | Pagine interattive (Home, Meteo, FBI, Login, Signup, About, Contact) con navbar/footer dinamici e gestione sessione utente. |
 
 ---
 
@@ -35,28 +35,31 @@ Il flusso di comunicazione delle richieste segue lo schema:
 ```plaintext
 node_exercise_2/
 ├── backend/
-│   ├── auth-service/        # Microservizio di autenticazione (OAuth / Sessioni)
-│   ├── gateway/             # API Gateway & Reverse Proxy
-│   ├── service/             # Servizio principale (Meteo, logica core)
-│   ├── wanted_service/      # Microservizio Python per dati FBI
-│   └── readme.md            # Appunti specifici sul pattern Gateway
+│   ├── auth-service/         # Microservizio di autenticazione (Google OAuth 2.0, Passport, sessioni)
+│   ├── gateway/              # API Gateway & Reverse Proxy (porta 4000)
+│   ├── service/              # Servizio principale (Meteo, routing pagine statiche, porta 3000)
+│   ├── wanted_service/       # Microservizio Python per dati FBI (porta 3002)
+│   └── readme.md             # Appunti sintetici sul pattern Gateway
+├── documentation/
+│   ├── changelog.md          # Storico delle versioni e modifiche
+│   ├── progetto-guida.md     # Guida completa con spiegazione e codice commentato riga per riga
+│   └── readme.md             # Documentazione e panoramica generale del progetto
 ├── frontend/
 │   └── public/
-│       ├── components/      # Componenti riutilizzabili (navbar, footer)
-│       ├── css/             # Fogli di stile per ciascuna pagina
-│       ├── js/              # Logica client-side e gestione auth (`auth.js`)
-│       ├── index.html       # Home page
-│       ├── weather.html     # Pagina consultazione meteo
-│       ├── FBI.html         # Schede ricercati FBI
-│       ├── login.html       # Login con credenziali o Google
-│       ├── signup.html      # Registrazione utente
-│       ├── about.html       # Pagina Chi Siamo
-│       └── contact.html     # Pagina Contatti
-├── changelog.md             # Storico delle versioni e modifiche
-├── install_module.bat       # Script batch per installare tutte le dipendenze npm
-├── run.bat                  # Script batch per avviare tutti i microservizi
-├── uninstall_module.bat     # Script batch per rimozione dipendenze
-└── readme.md                # Documentazione generale di progetto
+│       ├── components/       # Componenti riutilizzabili (navbar.html, footer.html)
+│       ├── css/              # Fogli di stile per ciascuna pagina
+│       ├── js/               # Logica client-side (navbar.js, auth.js, weather.js, FBI.js)
+│       ├── index.html        # Home page
+│       ├── weather.html      # Pagina consultazione meteo
+│       ├── FBI.html          # Schede ricercati FBI
+│       ├── login.html        # Login con credenziali o Google
+│       ├── signup.html       # Registrazione utente
+│       ├── about.html        # Pagina Chi Siamo
+│       └── contact.html      # Pagina Contatti
+├── install_module.bat        # Script batch per installare tutte le dipendenze npm nei 3 servizi Node
+├── run.bat                   # Script batch per avviare tutti i microservizi in terminali separati
+├── uninstall_module.bat      # Script batch per rimozione pulita delle cartelle node_modules
+└── .gitignore                # Regole di esclusione git (ignora .env, node_modules, cache)
 ```
 
 ---
@@ -64,7 +67,7 @@ node_exercise_2/
 ## ⚙️ Prerequisiti
 
 - **Node.js** (versione 18 o superiore consigliata) e **npm**
-- **Python** (versione 3.8 o superiore per `wanted_service`)
+- **Python** (versione 3.8 o superiore per `wanted_service`, usa solo librerie standard)
 
 ---
 
@@ -84,39 +87,42 @@ cd ../auth-service && npm install
 cd ../service && npm install
 ```
 
-Per il microservizio Python:
-```bash
-cd backend/wanted_service
-pip install -r requirements.txt   # o moduli richiesti da server.py
-```
+Il microservizio Python `backend/wanted_service` utilizza esclusivamente moduli della libreria standard (`http.server`, `urllib`, `json`, `datetime`, `pathlib`) e non richiede dipendenze esterne.
 
 ---
 
 ## 🔑 Configurazione Variabili d'Ambiente
 
-Crea i file `.env` nelle rispettive cartelle dei servizi:
+Crea i file `.env` nelle rispettive cartelle dei servizi (i file `.env` sono esclusi dal tracciamento Git):
 
 ### 1. `backend/service/.env`
 ```env
 PORT=3000
-WEATHER_API_KEY=tuo_api_key_openweather
+WEATHER_API_KEY=la_tua_api_key_openweather
 ```
 
 ### 2. `backend/auth-service/.env`
 ```env
 PORT=3001
-GOOGLE_CLIENT_ID=tuo_google_client_id
-GOOGLE_CLIENT_SECRET=tuo_google_client_secret
+AUTH_PORT=3001
+GOOGLE_CLIENT_ID=il_tuo_google_client_id
+GOOGLE_CLIENT_SECRET=il_tuo_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:3001/google/callback
 SESSION_SECRET=stringa_segreta_sessione
-CALLBACK_URL=http://localhost:3001/auth/google/callback
+FRONTEND_URL=http://localhost:4000/api/v1/
 ```
 
-### 3. `backend/gateway/.env` (opzionale se si usano le porte predefinite)
+### 3. `backend/gateway/.env`
 ```env
 GATEWAY_PORT=4000
 SERVICE_URL=http://localhost:3000
 AUTH_SERVICE_URL=http://localhost:3001
 WANTED_SERVICE_URL=http://localhost:3002
+```
+
+### 4. `backend/wanted_service/.env`
+```env
+WANTED_PORT=3002
 ```
 
 ---
@@ -130,9 +136,9 @@ Esegui con un doppio clic o da terminale:
 run.bat
 ```
 
-Questo avvierà ciascun microservizio in una finestra di comando separata:
-- **Gateway**: `http://localhost:4000`
-- **Main Service & Frontend**: `http://localhost:3000`
+Questo avvierà ciascun microservizio in una finestra di comando dedicata:
+- **Gateway**: `http://localhost:4000/api/v1/`
+- **Main Service**: `http://localhost:3000`
 - **Auth Service**: `http://localhost:3001`
 - **Wanted Service**: `http://localhost:3002`
 
@@ -157,17 +163,20 @@ cd backend/gateway && node src/gateway.js
 
 ## 🌐 Endpoint Principali
 
-Tutte le richieste possono essere inoltrate direttamente attraverso l'**API Gateway** (`http://localhost:4000`):
+Tutte le richieste transitano attraverso l'**API Gateway** all'indirizzo `http://localhost:4000/api/v1/`:
 
-- **GET /** : Homepage dell'applicazione
-- **GET /weather.html** : Interfaccia meteo
-- **POST /api/v1/weather** : Ricerca informazioni meteo per città
+- **GET /api/v1/** : Homepage dell'applicazione
+- **GET /api/v1/weather** : Interfaccia meteo
+- **POST /api/v1/weather** : Ricerca informazioni meteo per città (OpenWeatherMap)
+- **GET /api/v1/wanted/** : Scheda giornaliera ricercati FBI
+- **GET /api/v1/login** : Pagina di login
 - **GET /api/v1/auth/google** : Avvio del flusso di login con Google OAuth 2.0
-- **GET /api/v1/wanted** : Recupero dati ricercati FBI
+- **GET /api/v1/auth/me** : Verifica sessione utente e restituzione dati anagrafici
+- **GET /api/v1/auth/logout** : Logout e distruzione sessione
 
 ---
 
-## 📝 Changelog
+## 📖 Documentazione Dettagliata
 
-Per consultare l'evoluzione del progetto e le novità introdotte in ciascun aggiornamento, consulta il file [changelog.md](changelog.md).
-
+- [Guida Completa con Codice Commentato](progetto-guida.md)
+- [Registro delle Modifiche (Changelog)](changelog.md)

@@ -8,7 +8,8 @@ const router = express.Router();
  * Authentication routes:
  * - GET /login:                  Redirects to Google OAuth flow
  * - GET /google:                 Initiates Google OAuth authentication
- * - GET /auth/google/callback:   Handles the Google OAuth callback
+ * - GET /google/callback:        Handles the Google OAuth callback (matches Google Console URI)
+ * - GET /auth/google/callback:   Alias for backward compatibility
  * - GET /validate:               Checks if the current session is authenticated
  * - GET /logout:                 Destroys the session and logs the user out
  */
@@ -21,9 +22,9 @@ router.get("/login", (req, res) => {
 // Initiate Google OAuth flow (requests profile and email scopes)
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
-// Handle Google OAuth callback
+// Handle Google OAuth callback (supports both /google/callback and /auth/google/callback)
 router.get(
-    "/auth/google/callback",
+    ["/google/callback", "/auth/google/callback"],
     passport.authenticate("google", { 
         failureRedirect: "/login", 
         session: true 

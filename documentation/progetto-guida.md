@@ -1,325 +1,991 @@
 # Guida completa al progetto `node_exercise_2` — commento riga per riga
 
-Questo documento descrive l'intero progetto e riporta il codice di ogni file con un commento per ogni riga, che spiega cosa fa quella riga e cosa sta succedendo nel momento in cui viene eseguita o interpretata.
+Questo documento descrive l'intero progetto e riporta il codice di ogni file con spiegazioni dettagliate riga per riga o blocco per blocco, illustrando cosa accade a livello architetturale ed esecutivo quando il codice viene interpretato ed eseguito.
 
 ---
 
 ## 1. Cosa è questo progetto
 
-È una **piccola applicazione web full-stack** pensata per esercitarsi con:
+È un'**applicazione web full-stack didattica** sviluppata per comprendere i concetti fondamentali dell'ingegneria del software web moderno:
 
-- pagine HTML semplici;
-- stili CSS moderni e responsive;
-- un minimo di interazione con JavaScript lato client;
-- un backend in Node.js + Express che serve le pagine e riceve dati dai form.
-
-L'app ha diverse pagine: Home, About, Contact, Login, Sign Up e una pagina Meteo. La barra di navigazione e il footer sono componenti HTML condivisi, caricati dinamicamente in ogni pagina con JavaScript.
+- **Modello Client-Server e protocollo HTTP**: richiesta e risposta, metodi HTTP (`GET`, `POST`), codici di stato (`200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`, `502 Bad Gateway`), header e cookie.
+- **Architettura a Microservizi**: scomposizione dell'applicazione in servizi indipendenti e specializzati, ciascuno con la propria responsabilità e porta dedicata.
+- **API Gateway e Reverse Proxy**: un punto di ingresso unico (`http://localhost:4000/api/v1/`) che riceve tutte le richieste dal browser e le smista internamente verso il microservizio competente.
+- **API Versioning & Endpoint Hiding**: mascheramento degli indirizzi reali dei server interni e versionamento degli endpoint pubblici sotto `/api/v1/`.
+- **Autenticazione federata con Google OAuth 2.0**: flusso di login con provider esterno, delega dell'identità, gestione di token e profili tramite **Passport.js**.
+- **Gestione delle Sessioni e Cookie HTTP**: memorizzazione dello stato di autenticazione lato server (`express-session`) associato a un cookie `connect.sid` crittografato e protetto (`HttpOnly`, `SameSite`).
+- **Integrazione con API REST esterne di terze parti**:
+  - *OpenWeatherMap API*: recupero previsioni meteo in tempo reale da servizio Node.js;
+  - *FBI Wanted Public API*: recupero e normalizzazione giornaliera della lista dei ricercati federali tramite microservizio Python.
+- **Frontend Modulare con JavaScript Vanilla**:
+  - Pagine HTML5 semantiche e responsive;
+  - Componenti condivisi (barra di navigazione e piè di pagina) caricati dinamicamente via `fetch()` da `navbar.js` e `auth.js`;
+  - Adattamento automatico dell'interfaccia allo stato di login dell'utente (mostra nome utente e logout, oppure login e signup);
+  - Chiamate AJAX/Fetch asincrone senza ricaricamento dell'intera pagina.
+- **Automazione su ambiente Windows**: script batch `.bat` per installare le dipendenze npm e orchestrare l'avvio coordinato dei 4 microservizi in terminali distinti.
 
 ---
 
 ## 2. Tecnologie e librerie usate
 
-### Lato backend (Node.js)
+### Lato backend (Node.js & Python)
 
-| Tecnologia | A cosa serve |
-|------------|--------------|
-| **Node.js** | Ambiente di esecuzione per JavaScript sul server. |
-| **Express** | Framework minimale per creare server web e gestire route. |
-| **body-parser** | Middleware per leggere i dati inviati dai form (JSON e dati codificati). |
-| **cors** | Middleware per gestire le richieste provenienti da domini diversi (incluso nel `package.json` ma non usato attivamente nel codice). |
-| **axios** | Libreria per fare richieste HTTP; presente nel `package.json` ma non usata attivamente nel codice. |
-| **node-fetch** | Libreria per fare richieste HTTP da Node.js; usata dal controller meteo per chiamare l'API OpenWeatherMap. |
+| Tecnologia / Modulo | Servizio | A cosa serve |
+|---|---|---|
+| **Node.js** | Tutti i servizi JS | Ambiente di esecuzione JavaScript lato server ad alte prestazioni asincrone. |
+| **Express** | Gateway, Service, Auth Service | Framework web minimale per gestire routing, middleware e server HTTP. |
+| **http-proxy-middleware** | Gateway (`:4000`) | Crea il reverse proxy che inoltra e riscrive le richieste da `/api/v1/...` verso i servizi backend interni. |
+| **passport** | Auth Service (`:3001`) | Middleware di autenticazione flessibile e modulare per Node.js. |
+| **passport-google-oauth20** | Auth Service (`:3001`) | Strategia di autenticazione Google OAuth 2.0 per Passport. |
+| **express-session** | Auth Service (`:3001`) | Gestione delle sessioni utente lato server tramite cookie di sessione crittografati (`connect.sid`). |
+| **body-parser** | Main Service (`:3000`) | Middleware per leggere e parsare il corpo delle richieste HTTP in formato JSON e URL-encoded (form). |
+| **node-fetch** | Main Service (`:3000`) | Client HTTP per effettuare richieste asincrone all'API meteo OpenWeatherMap. |
+| **dotenv** | Tutti i servizi JS | Carica le variabili di configurazione dai file `.env` nelle proprietà `process.env`. |
+| **Python 3** | Wanted Service (`:3002`) | Linguaggio per il microservizio FBI (`http.server`, `urllib.request`, `json`, `datetime`). |
 
 ### Lato frontend
 
 | Tecnologia | A cosa serve |
-|------------|--------------|
-| **HTML5** | Struttura delle pagine. |
-| **CSS3** | Stili, layout, colori, animazioni e adattamento ai dispositivi mobili. |
-| **JavaScript (vanilla)** | Interazione con il DOM, caricamento componenti condivisi, invio richieste al server. |
-| **Fetch API** | Interfaccia moderna del browser per fare richieste HTTP. |
+|---|---|
+| **HTML5** | Struttura semantica delle pagine (`<nav>`, `<main>`, `<section>`, `<footer>`, `<form>`). |
+| **CSS3** | Stili moderni, Flexbox per layout a tutta altezza (`min-height: 100vh`), ombre (`box-shadow`), animazioni di entrata (`@keyframes fadeIn`) e media queries per smartphone. |
+| **JavaScript Vanilla (ES6+)** | Manipolazione del DOM, gestione eventi submit/click, rendering asincrono. |
+| **Fetch API** | Esecuzione di richieste HTTP asincrone (GET e POST) dal browser verso il Gateway. |
 
 ---
 
 ## 3. Struttura del progetto
 
-```text
+```plaintext
 node_exercise_2/
 ├── backend/
-│   └── service/                  # applicazione Node.js/Express
-│       ├── package.json          # dipendenze del backend
-│       └── src/
-│           ├── server.js         # entry point del server Express
-│           ├── route/
-│           │   ├── pageroutes.js # route GET per le pagine HTML
-│           │   ├── weather.js    # route POST /weather
-│           │   ├── auth.js       # route POST /login
-│           │   └── signin.js     # route POST /signup
-│           ├── controllers/
-│           │   ├── weatherController.js  # logica di chiamata all'API meteo
-│           │   ├── authcontroller.js     # logica di verifica login
-│           │   └── signincontroller.js   # logica di registrazione
-│           └── utils/
-│               ├── logger.js             # helper per la stampa degli errori
-│               ├── normalizeWeather.js   # normalizza la risposta di OpenWeatherMap
-│               ├── validateCity.js       # valida il nome della città
-│               ├── apiclient.js          # chiama l'API meteo
-│               └── constants.js          # legge le configurazioni da .env
-└── frontend/
-    └── public/                   # file statici serviti al browser
-        ├── index.html            # pagina Home
-        ├── about.html            # pagina About
-        ├── contact.html          # pagina Contact
-        ├── login.html            # pagina Login
-        ├── signup.html           # pagina Sign Up
-        ├── weather.html          # pagina Meteo
-        ├── assets/               # immagini e altri asset statici
-        │   └── ...
-        ├── components/
-        │   ├── navbar.html       # barra di navigazione condivisa
-        │   └── footer.html       # footer condiviso
-        ├── css/
-        │   ├── index.css         # stili della Home
-        │   ├── about.css         # stili di About
-        │   ├── contact.css       # stili di Contact
-        │   ├── login.css         # stili di Login
-        │   ├── signup.css        # stili di Sign Up
-        │   ├── weather.css       # stili di Weather
-        │   ├── navbar.css        # stili della navbar
-        │   └── footer.css        # stili del footer
-        └── js/
-            └── weather.js        # logica della pagina Meteo
+│   ├── auth-service/                     # Microservizio Autenticazione (porta 3001)
+│   │   ├── config/
+│   │   │   ├── env.js                    # Configurazione e fallback variabili d'ambiente
+│   │   │   └── passport.js               # Strategia Google OAuth 2.0, serializzazione/deserializzazione sessione
+│   │   ├── src/
+│   │   │   ├── authserver.js             # Entry point del server Express di autenticazione
+│   │   │   └── routes/
+│   │   │       └── auth_routes.js        # Route /login, /google, /google/callback (alias /auth/google/callback), /me, /validate, /logout
+│   │   ├── .env                          # Variabili locali (PORT=3001, GOOGLE_CLIENT_ID, SECRET)
+│   │   └── package.json                  # Dipendenze: express, passport, passport-google-oauth20, express-session
+│   ├── gateway/                          # API Gateway & Reverse Proxy (porta 4000)
+│   │   ├── config/
+│   │   │   └── env.js                    # Porte e URL di routing dei microservizi
+│   │   ├── src/
+│   │   │   └── gateway.js                # Entry point del Gateway: monta i reverse proxy su /api/v1/
+│   │   ├── .env                          # Variabili gateway (GATEWAY_PORT=4000, SERVICE_URL, etc.)
+│   │   └── package.json                  # Dipendenze: express, http-proxy-middleware, dotenv
+│   ├── service/                          # Main Service: Meteo e Pagine Statiche (porta 3000)
+│   │   ├── config/
+│   │   │   ├── env.js                    # Validazione variabili obbligatorie (WEATHER_API_KEY, PORT)
+│   │   │   └── paths.js                  # Percorsi centralizzati del filesystem verso frontend/public
+│   │   ├── src/
+│   │   │   ├── server.js                 # Entry point del server principale Express
+│   │   │   ├── controllers/
+│   │   │   │   ├── weatherController.js  # Coordinatore chiamata API meteo e gestione errori 404
+│   │   │   │   ├── authcontroller.js     # Controller mock login con credenziali fisse
+│   │   │   │   └── signincontroller.js   # Controller mock registrazione utente
+│   │   │   ├── route/
+│   │   │   │   ├── pageroutes.js         # Route GET per servire le pagine HTML statiche
+│   │   │   │   ├── weather.js            # Route POST /weather
+│   │   │   │   ├── auth.js               # Route POST /login
+│   │   │   │   └── signin.js             # Route POST /signup
+│   │   │   └── utils/
+│   │   │       ├── apiclient.js          # Chiamata HTTP con fetch a OpenWeatherMap
+│   │   │       ├── validateCity.js       # Validazione regex del nome città
+│   │   │       ├── normalizeWeather.js   # Estrazione campi essenziali del payload meteo
+│   │   │       ├── logger.js             # Helper centralizzato per console.error
+│   │   │       └── constants.js          # Esportazione costanti PORT e WEATHER_API_KEY
+│   │   ├── .env                          # Variabili di servizio (PORT=3000, WEATHER_API_KEY)
+│   │   └── package.json                  # Dipendenze: express, body-parser, node-fetch, dotenv
+│   ├── wanted_service/                   # Microservizio Python FBI (porta 3002)
+│   │   ├── server.py                     # Server HTTP Python con SimpleHTTPRequestHandler e fetch FBI
+│   │   ├── utils/
+│   │   │   └── converter.py              # Normalizzazione payload FBI e validazione link sicuri
+│   │   └── .env                          # Porta WANTED_PORT=3002
+│   └── readme.md                         # Appunti didattici sulle funzioni dell'API Gateway
+├── documentation/
+│   ├── changelog.md                      # Storico di tutte le versioni e modifiche apportate
+│   ├── progetto-guida.md                 # Questo documento di guida completa commentata
+│   └── readme.md                         # Documentazione generale e guida rapida
+├── frontend/
+│   └── public/                           # Risorse statiche servite al browser
+│       ├── components/
+│       │   ├── navbar.html               # Barra di navigazione condivisa con voci dinamiche di login/logout
+│       │   └── footer.html               # Piè di pagina condiviso con copyright
+│       ├── css/
+│       │   ├── navbar.css                # Stile barra di navigazione e menu responsive
+│       │   ├── footer.css                # Stile piè di pagina con margin-top automatico
+│       │   ├── index.css                 # Stile home page
+│       │   ├── weather.css               # Stile pagina meteo
+│       │   ├── fbi.css                   # Stile scheda ricercati FBI
+│       │   ├── login.css                 # Stile pagina login con divisore e pulsante Google
+│       │   ├── signup.css                # Stile pagina registrazione
+│       │   ├── about.css                 # Stile pagina About con elenco spuntato
+│       │   └── contact.css               # Stile pagina Contatti
+│       ├── js/
+│       │   ├── navbar.js                 # Gestore caricamento componenti e controllo sessione utente
+│       │   ├── auth.js                   # Wrapper di compatibilità per la sessione utente
+│       │   ├── weather.js                # Intercettazione form meteo e chiamata asincrona
+│       │   └── FBI.js                    # Richiesta e rendering sicuro della scheda ricercato FBI
+│       ├── index.html                    # Pagina iniziale Home
+│       ├── weather.html                  # Pagina consultazione meteo
+│       ├── FBI.html                      # Pagina ricercato FBI del giorno
+│       ├── login.html                    # Pagina di accesso (credenziali classiche o Google)
+│       ├── signup.html                   # Pagina di registrazione account
+│       ├── about.html                    # Pagina informativa Chi Siamo
+│       └── contact.html                  # Pagina con contatti e recapiti
+├── install_module.bat                    # Script batch Windows per eseguire npm install in tutti i servizi Node
+├── run.bat                               # Script batch Windows per avviare contemporaneamente i 4 microservizi
+├── uninstall_module.bat                  # Script batch Windows per eliminare tutte le cartelle node_modules
+└── .gitignore                            # Esclusione dai commit Git per file .env, node_modules e cache
 ```
 
 ---
 
-## 4. Come funziona il backend
+## 4. Come funziona il backend (Architettura a Microservizi)
 
-Il backend è organizzato in più file sotto `backend/service/src`:
-
-- **`server.js`**: entry point. Crea l'applicazione Express, registra i middleware, importa i router delle pagine, del meteo, dell'autenticazione e della registrazione, e serve i file statici.
-- **`route/pageroutes.js`**: contiene tutte le route GET che servono le pagine HTML.
-- **`route/weather.js`**: definisce la route `POST /weather` collegata al controller.
-- **`route/auth.js`**: definisce la route `POST /login` collegata al controller di autenticazione.
-- **`route/signin.js`**: definisce la route `POST /signup` collegata al controller di registrazione.
-- **`controllers/weatherController.js`**: coordina la validazione, chiama l'API OpenWeatherMap e restituisce i dati meteo al client.
-- **`controllers/authcontroller.js`**: verifica le credenziali di login fisse `admin` / `1234`.
-- **`controllers/signincontroller.js`**: gestisce la registrazione senza persistenza.
-- **`utils/apiclient.js`**: effettua la chiamata HTTP a OpenWeatherMap.
-- **`utils/validateCity.js`**: controlla che il nome della città sia valido.
-- **`utils/normalizeWeather.js`**: estrae i campi utili dalla risposta di OpenWeatherMap.
-- **`utils/logger.js`**: helper per stampare gli errori in console.
-- **`utils/constants.js`**: legge chiave API e porta dalle variabili d'ambiente.
-
-Il server, all'avvio:
-
-1. Carica le variabili d'ambiente con `dotenv`.
-2. Abilita `body-parser` per leggere i dati JSON e quelli inviati dai form.
-3. Monta `pageRoutes` per le pagine HTML.
-4. Monta `weatherRoutes` per le richieste meteo.
-5. Monta `authRoutes` per le richieste di login.
-6. Monta `signinRoutes` per le richieste di registrazione.
-7. Serve tutta la cartella `frontend/public` come contenuto statico.
-8. Si mette in ascolto sulla porta definita in `PORT` (default `3000`).
-
-### Note importanti
-
-- La home `/` è servita esplicitamente da `pageroutes.js`.
-- Le pagine `/login`, `/signup`, `/about` e `/contact` sono servite tramite route GET esplicite in `pageroutes.js`; i file `.html` restano comunque accessibili grazie a `express.static`.
-- `/weather.html` è accessibile come file statico.
-- La route `POST /weather` è implementata: riceve `{ city }` in formato JSON e usa `node-fetch` per chiamare OpenWeatherMap, restituendo temperature, umidità, vento, descrizione e icona.
-- Login e Sign Up sono gestiti da route e controller dedicati, ma restano **senza persistenza**: non salvano dati su database; il login verifica solo le credenziali fisse `admin` / `1234`.
-
-### Avviare il server
-
-Apri un terminale nella cartella `backend/service` ed esegui:
-
-```bash
-node src/server.js
-```
-
-Poi apri il browser all'indirizzo:
+L'applicazione non è un monolite, ma una federazione di 4 servizi cooperanti:
 
 ```text
-http://localhost:3000
+               +----------------------------------------+
+               |        Client Web / Browser            |
+               |     (http://localhost:4000/api/v1/)    |
+               +-------------------+--------------------+
+                                   |
+                                   | Richieste HTTP
+                                   v
+               +-------------------+--------------------+
+               |           API GATEWAY                  |
+               |        (Porta 4000 Express)            |
+               +---------+---------+---------+----------+
+                         |         |         |
+      /api/v1/auth/*     |         |         |  /api/v1/*
+     (riscritto in /*)   |         |         | (riscritto in /*)
+                         v         |         v
+     +-------------------+---+     |   +-----+------------------+
+     |     AUTH SERVICE      |     |   |      MAIN SERVICE      |
+     |   (Porta 3001 Node)   |     |   |   (Porta 3000 Node)    |
+     | - Passport Google     |     |   | - Servizio file statici|
+     | - express-session     |     |   | - Route meteo POST     |
+     | - /me, /validate      |     |   | - OpenWeatherMap API   |
+     +-----------------------+     |   +------------------------+
+                                   |
+                                   | /api/v1/wanted/*
+                                   | (riscritto in /*)
+                                   v
+                     +-------------+------------+
+                     |      WANTED SERVICE      |
+                     |    (Porta 3002 Python)   |
+                     | - SimpleHTTPRequestHandler|
+                     | - FBI Wanted Public API  |
+                     +--------------------------+
 ```
+
+### 1. API Gateway (`backend/gateway/`, porta 4000)
+- È l'**unico punto di ingresso esposto al client**.
+- Utilizza `http-proxy-middleware` per instradare le richieste:
+  - Tutte le richieste che iniziano con `/api/v1/auth` vengono spogliate del prefisso e girate a `http://localhost:3001`;
+  - Tutte le richieste che iniziano con `/api/v1/wanted` vengono girate a `http://localhost:3002`;
+  - Tutte le altre richieste sotto `/api/v1` vengono girate al Main Service a `http://localhost:3000`.
+- Implementa l'**Endpoint Hiding**: il browser non conosce gli indirizzi o le porte reali dei microservizi interni.
+- Implementa l'**API Versioning**: garantisce che tutte le API siano accessibili sotto una versione stabile (`/v1`).
+
+### 2. Auth Service (`backend/auth-service/`, porta 3001)
+- Gestisce l'identità e la persistenza della sessione.
+- Utilizza **Passport.js** configurato con `GoogleStrategy`:
+  1. Il client clicca "Accedi con Google" (`/api/v1/auth/google`);
+  2. Il gateway inoltra la richiesta all'Auth Service;
+  3. L'Auth Service reindirizza il browser alla schermata di consenso Google;
+  4. Google rimanda l'utente alla callback configurata (`http://localhost:3001/google/callback`) fornendo un authorization code;
+  5. L'Auth Service scambia il codice con il profilo utente (Google ID, nome, cognome, email);
+  6. Viene creata una sessione in memoria con `express-session` e inviato al browser un cookie `connect.sid`;
+  7. L'utente viene reindirizzato alla Home page (`http://localhost:4000/api/v1/`).
+- Endpoint `/me`: interrogato dalla navbar per verificare se l'utente è autenticato e ricavarne il nome.
+
+### 3. Main Service (`backend/service/`, porta 3000)
+- Fornisce le pagine HTML statiche (`pageroutes.js`).
+- Gestisce la consultazione meteo:
+  1. Riceve `POST /weather` con payload JSON `{ city: "Roma" }`;
+  2. Valida la sintassi del nome della città tramite regex alfabetica (`validateCity.js`);
+  3. Effettua una chiamata HTTP GET autenticata verso OpenWeatherMap (`apiclient.js`);
+  4. In caso di errore (es. città inesistente 404), restituisce un messaggio appropriato;
+  5. Se la città esiste, normalizza il payload JSON (`normalizeWeather.js`) ed estrae temperatura, umidità, velocità del vento e codice icona.
+
+### 4. Wanted Service (`backend/wanted_service/`, porta 3002)
+- Microservizio realizzato in Python 3 puro, senza dipendenze esterne.
+- Interroga l'API ufficiale dell'FBI (`https://api.fbi.gov/wanted/v1/list`).
+- Esegue un algoritmo deterministico giornaliero basato sull'ordinale della data (`date.today().toordinal()`), così che tutti gli utenti visualizzino la stessa scheda nel corso della giornata.
+- Filtra preferenzialmente i ricercati con stato `wanted` e valida i link esterni con `safe_fbi_url` (ammettendo esclusivamente domini `https://www.fbi.gov`).
 
 ---
 
 ## 5. Come funziona il frontend
 
-Ogni pagina HTML:
+### Componenti modulari e Gestione della Sessione (`navbar.js`)
+Invece di duplicare la barra di navigazione e il piè di pagina in tutti i file HTML, ciascuna pagina contiene:
+```html
+<div id="navbar"></div>
+...
+<div id="footer"></div>
+<script src="/api/v1/js/navbar.js"></script>
+```
 
-1. Carica i propri file CSS e i CSS condivisi di navbar e footer.
-2. Ha un `<div id="navbar">` e un `<div id="footer">` vuoti.
-3. All'interno di questi `<div>` c'è uno script che usa `fetch()` per scaricare `navbar.html` o `footer.html` e inserisce il contenuto ricevuto al posto del `<div>`.
+Al caricamento del DOM, `navbar.js`:
+1. Esegue una richiesta `fetch('/api/v1/components/navbar.html')` e inietta il codice HTML in `#navbar`;
+2. Esegue una richiesta `fetch('/api/v1/components/footer.html')` e inietta il codice HTML in `#footer`;
+3. Interroga l'endpoint `/api/v1/auth/me` con l'opzione `{ credentials: 'include' }` (necessaria affinché il browser trasmetta il cookie di sessione attraverso il reverse proxy);
+4. Se l'utente è autenticato (`authenticated: true`):
+   - Nasconde i pulsanti "Login" e "Signup";
+   - Mostra il nome dell'utente (`✓ Nome`) e il collegamento per effettuare il "Logout" (`/api/v1/auth/logout`);
+5. Se l'utente non è autenticato:
+   - Mostra regolarmente "Login" e "Signup", nascondendo i campi profilo.
 
-In questo modo la stessa navbar e lo stesso footer appaiono in tutte le pagine senza dover riscrivere il codice.
-
-La pagina `weather.html` inoltre carica `weather.js`, che:
-
-- intercetta l'invio del form;
-- impedisce il ricaricamento della pagina;
-- legge il nome della città;
-- invia una richiesta POST a `/weather` in formato JSON;
-- riceve dal server una risposta JSON;
-- in caso di errore mostra il messaggio ricevuto;
-- in caso di successo mostra città, icona, descrizione, temperatura, umidità e vento nel box sottostante.
+### Interattività asincrona Meteo (`weather.js`)
+- Il form intercetta l'evento `submit`, blocca il reload predefinito (`event.preventDefault()`) e legge il valore dell'input;
+- Invia una richiesta `POST /api/v1/weather` con header `Content-Type: application/json`;
+- In base alla risposta JSON ricevuta dal server:
+  - Se è presente `error: true`, mostra un riquadro rosso col messaggio d'errore;
+  - Se il risultato è valido, costruisce dinamicamente la scheda con temperatura, umidità, vento e icona ufficiale OpenWeatherMap.
 
 ---
 
 ## 6. Dipendenze nei `package.json`
 
-Il file `package.json` si trova ora in `backend/service/package.json`. Non esiste più un `package.json` nella radice del progetto.
+Ciascun microservizio Node.js dispone del proprio file `package.json` isolato.
 
-### `backend/service/package.json`
-
+### `backend/gateway/package.json`
 ```json
 {
   "dependencies": {
     "body-parser": "^1.20.3",
-    "dotenv": "^18.0.7",
+    "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "http-proxy-middleware": "^4.2.0",
     "node-fetch": "^3.3.2"
   }
 }
 ```
+- **express**: server web HTTP per il Gateway;
+- **http-proxy-middleware**: il cuore del reverse proxy per inoltrare e riscrivere gli URL;
+- **dotenv**: lettura sicura delle porte e degli URL dai file `.env`.
 
-> **Nota:** il backend usa `body-parser` per leggere il corpo delle richieste, `dotenv` per caricare le variabili d'ambiente, `express` come framework e `node-fetch` per chiamare l'API meteo. Non sono presenti dipendenze non utilizzate come `axios` o `body-parse`. La versione di `dotenv` indicata (`^18.0.7`) non esiste su npm: in un progetto reale va corretta con una versione valida, ad esempio `^16.4.5`.
+### `backend/auth-service/package.json`
+```json
+{
+  "name": "auth-service",
+  "version": "1.0.0",
+  "description": "Servizio di autenticazione",
+  "main": "src/authserver.js",
+  "scripts": {
+    "start": "node src/authserver.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-session": "^1.19.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
+  }
+}
+```
+- **express-session**: gestione delle sessioni basate su cookie;
+- **passport** e **passport-google-oauth20**: strategia per l'autenticazione tramite Google OAuth 2.0.
+
+### `backend/service/package.json`
+```json
+{
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "node-fetch": "^2.7.0"
+  }
+}
+```
+- **body-parser**: lettura payload JSON e form URL-encoded;
+- **node-fetch**: client HTTP per chiamare l'API esterna OpenWeatherMap.
 
 ---
 
 ## 7. Codice completo commentato riga per riga
 
-Di seguito trovi ogni file del progetto con un commento accanto a ogni riga che descrive cosa sta facendo.
-
-### `backend/service/src/server.js`
-
-```javascript
-const express = require("express");              // Importa il framework Express.
-const path = require("path");                    // Importa il modulo per gestire i percorsi dei file.
-const app = express();                           // Crea l'applicazione Express.
-const bodyParser = require("body-parser");       // Importa il middleware per leggere il corpo delle richieste.
-require("dotenv").config();                      // Carica le variabili d'ambiente dal file .env nella root del progetto.
-const { PORT } = require("./utils/constants");   // Importa la porta dalle variabili d'ambiente.
-const port = PORT || 3000;                       // Usa la porta dall'env, altrimenti il default 3000.
-
-// il body parser serve per leggere i dati inviati dal form
-app.use(bodyParser.json());                    // Abilita la lettura del corpo in formato JSON.
-app.use(bodyParser.urlencoded({ extended: true })); // Abilita la lettura dei dati inviati dai form HTML.
-
-const pageRoutes = require("./route/pageroutes"); // Importa le routes delle pagine statiche.
-app.use("/", pageRoutes);    // Usa le routes definite in pageroutes.js per gestire le richieste alle pagine statiche.
-
-const weatherRoutes = require("./route/weather"); // Importa le routes per le richieste meteo.
-app.use("/", weatherRoutes); // Usa le routes definite in weather.js per gestire le richieste meteo.
-
-const authRoutes = require("./route/auth"); // Importa le routes per le richieste di autenticazione.
-app.use("/", authRoutes); // Usa le routes definite in auth.js per gestire le richieste di autenticazione.
-
-const signinRoutes = require("./route/signin"); // Importa le routes per le richieste di registrazione.
-app.use("/", signinRoutes); // Usa le routes definite in signin.js per gestire le richieste di registrazione.
-
-app.use(express.static(path.join(__dirname, "../../../frontend/public"))); // Serve i file statici della cartella public.
+Di seguito viene riportato il codice sorgente completo di tutti i file dell'applicazione, suddivisi per componente.
 
 
+### Script di Automazione Windows
 
+#### `install_module.bat`
 
-//definizione dello stato visualizzabile da prompt
-app.listen(port, ()=> {                        // Avvia il server sulla porta definita.
-console.log("Server in ascolto alla porta " + port); // Scrive in console la porta di ascolto.
-console.log('accedi all indirizzo http://localhost:'+port) // Scrive in console l'indirizzo da aprire nel browser.
-}); // Chiude il metodo listen.
+```batch
+@echo off
+title Installazione dipendenze Node.js
+
+cd /d "%~dp0"
+
+echo.
+echo ==============================
+echo INSTALLAZIONE GATEWAY
+echo ==============================
+cd backend\gateway
+call npm install
+
+echo.
+echo ==============================
+echo INSTALLAZIONE AUTH-SERVICE
+echo ==============================
+cd ..\auth-service
+call npm install
+
+echo.
+echo ==============================
+echo INSTALLAZIONE SERVICE
+echo ==============================
+cd ..\service
+call npm install
+
+echo.
+echo ==============================
+echo INSTALLAZIONE COMPLETATA
+echo ==============================
+echo.
+
+pause
 ```
 
 ---
 
-### `backend/service/src/route/pageroutes.js`
+#### `run.bat`
+
+```batch
+@echo off
+
+cd /d "%~dp0"
+
+start "Auth Service" cmd /k "cd backend\auth-service && node src\authserver.js"
+
+start "Service" cmd /k "cd backend\service && node src\server.js"
+
+start "Gateway" cmd /k "cd backend\gateway && node src\gateway.js"
+
+if exist backend\wanted_service\server.py (
+    start "Wanted Service" cmd /k "cd backend\wanted_service && python server.py"
+)
+
+pause
+```
+
+---
+
+#### `uninstall_module.bat`
+
+```batch
+@echo off
+title Rimozione node_modules
+
+cd /d "%~dp0"
+
+echo.
+echo ==============================
+echo RIMOZIONE GATEWAY
+echo ==============================
+rmdir /s /q backend\gateway\node_modules
+
+echo.
+echo ==============================
+echo RIMOZIONE AUTH-SERVICE
+echo ==============================
+rmdir /s /q backend\auth-service\node_modules
+
+echo.
+echo ==============================
+echo RIMOZIONE SERVICE
+echo ==============================
+rmdir /s /q backend\service\node_modules
+
+echo.
+echo ==============================
+echo RIMOZIONE COMPLETATA
+echo ==============================
+
+pause
+```
+
+---
+
+
+### Backend — API Gateway (`backend/gateway`)
+
+#### `backend/gateway/config/env.js`
 
 ```javascript
-//raccolgo qui tutte le routes delle pages, i percorsi utili per inserire l'invio delle pagine statiche
-//in altre parole, tutti i get saranno gestiti qui
+const path = require("path");
+const fs = require("fs");
 
-const express = require("express"); // Importa il framework Express.
-const router = express.Router(); // Crea un router Express per gestire le rotte.
-const path = require("path"); // Importa il modulo per gestire i percorsi dei file.
+const envPaths = [
+    path.join(__dirname, "../gateway.env"),
+    path.join(__dirname, "../.env"),
+    path.join(process.cwd(), "gateway.env"),
+    path.join(process.cwd(), ".env"),
+];
+
+for (const p of envPaths) {
+    if (fs.existsSync(p)) {
+        require("dotenv").config({ path: p });
+    }
+}
+require("dotenv").config();
+
+module.exports = {
+    SERVICE_URL: process.env.SERVICE_URL || "http://localhost:3000",
+    GATEWAY_PORT: parseInt(process.env.GATEWAY_PORT || "4000", 10),
+    AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL || "http://localhost:3001",
+    WANTED_SERVICE_URL: process.env.WANTED_SERVICE_URL || "http://localhost:3002"
+};
+
+// Configurazione centralizzata del gateway (porte e URL dei microservizi)
+```
+
+---
+
+#### `backend/gateway/src/gateway.js`
+
+```javascript
+const express = require("express");
+const { createProxyMiddleware } = require("http-proxy-middleware");
+const config = require("../config/env");
+
+const app = express();
+
+/**
+ * API GATEWAY & REVERSE PROXY
+ *
+ * Ruoli e pattern implementati:
+ * 1. API Versioning: espone tutte le risorse sotto il prefisso comune /api/v1/.
+ * 2. Endpoint Hiding: maschera gli indirizzi e le porte interne dei singoli microservizi.
+ *    Il client contatta solo il gateway (es. http://localhost:4000/api/v1/weather)
+ *    e il proxy riscrive l'URL inoltrando la richiesta al service (es. http://localhost:3000/weather).
+ * 3. Routing verso i microservizi:
+ *    - /api/v1/auth   -> Auth Service (porta 3001)
+ *    - /api/v1/wanted -> Wanted Service FBI Python (porta 3002)
+ *    - /api/v1        -> Main Service Node/Express (porta 3000)
+ */
+
+// Proxy verso Auth Service (autenticazione / login Google)
+app.use("/api/v1/auth", createProxyMiddleware({
+  target: config.AUTH_SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    "^/api/v1/auth": ""
+  }
+}));
+
+// Proxy verso Wanted Service (scheda giornaliera FBI in Python)
+app.use("/api/v1/wanted", createProxyMiddleware({
+  target: config.WANTED_SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    "^/api/v1/wanted": ""
+  }
+}));
+
+// Proxy predefinito verso il Main Service (pagine HTML statiche, meteo, form)
+app.use("/api/v1", createProxyMiddleware({
+  target: config.SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    "^/api/v1": ""
+  }
+}));
+
+app.listen(config.GATEWAY_PORT, () => {
+  console.log(`Gateway attivo su http://localhost:${config.GATEWAY_PORT}/api/v1`);
+});
+```
+
+---
 
 
-router.get("/", (req, res) => { // Definisce la route GET per la home page.
-    res.sendFile(path.join(__dirname, "../../../../frontend/public/index.html")); // Invia il file index.html al browser.
-}); // Chiude la route GET /.
+### Backend — Microservizio Autenticazione (`backend/auth-service`)
 
-router.get("/login", (req, res) => { // Definisce la route GET per la pagina di login.
-    res.sendFile(path.join(__dirname, "../../../../frontend/public/login.html")); // Invia il file login.html al browser.
-}); // Chiude la route GET /login.
+#### `backend/auth-service/config/env.js`
 
-router.get("/signup", (req, res) => { // Definisce la route GET per la pagina di registrazione.
-    res.sendFile(path.join(__dirname, "../../../../frontend/public/signup.html")); // Invia il file signup.html al browser.
+```javascript
+const path = require("path");
+const fs = require("fs");
+
+const envPaths = [
+    path.join(__dirname, "../auth-service.env"),
+    path.join(__dirname, "../.env"),
+    path.join(process.cwd(), "auth-service.env"),
+    path.join(process.cwd(), ".env"),
+];
+
+for (const p of envPaths) {
+    if (fs.existsSync(p)) {
+        require("dotenv").config({ path: p });
+    }
+}
+require("dotenv").config();
+
+module.exports = {
+    PORT: parseInt(process.env.AUTH_PORT || process.env.PORT || "3001", 10),
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3001/google/callback",
+    FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:4000/api/v1/",
+    SESSION_SECRET: process.env.SESSION_SECRET || "super-secret-key",
+};
+```
+
+---
+
+#### `backend/auth-service/config/passport.js`
+
+```javascript
+const env = require("./env");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+
+// Guard: fail early with a clear message if credentials are missing
+if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+    throw new Error(
+        "Missing Google OAuth credentials. " +
+        "Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env or auth-service.env file."
+    );
+}
+
+passport.use(
+    new GoogleStrategy(
+        {
+            clientID: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+            callbackURL: env.GOOGLE_CALLBACK_URL || "http://localhost:3001/google/callback",
+        },
+
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                // Build a minimal user object from the Google profile
+                const user = {
+                    googleId: profile.id,
+                    displayName: profile.displayName,
+                    firstName: profile.name?.givenName || profile.displayName?.split(" ")[0] || "user",
+                    lastName: profile.name?.familyName || profile.displayName?.split(" ").slice(1).join(" ") || "",
+                    email: profile.emails?.[0]?.value,
+                };
+
+                return done(null, user);
+
+            } catch (err) {
+                return done(err, null);
+            }
+        }
+    )
+);
+
+// Serialize the user into the session (store entire user object)
+passport.serializeUser((user, done) => {
+    done(null, user);
 });
 
-router.get("/about", (req, res) => { // Definisce la route GET per la pagina About.
-    res.sendFile(path.join(__dirname, "../../../../frontend/public/about.html")); // Invia il file about.html al browser.
-}); // Chiude la route GET /about.
+// Deserialize the user from the session
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
 
-router.get("/contact", (req, res) => { // Definisce la route GET per la pagina Contact.
-    res.sendFile(path.join(__dirname, "../../../../frontend/public/contact.html")); // Invia il file contact.html al browser.
-}); // Chiude la route GET /contact.
-
-module.exports = router; // Esporta il router per essere utilizzato in altri file.
+module.exports = passport;
 ```
 
 ---
 
-### `backend/service/src/route/weather.js`
+#### `backend/auth-service/src/authserver.js`
 
 ```javascript
-// Questo file definisce la route che gestisce le richieste meteo.
-// Il controller si occupa di chiamare l'API esterna e restituire i dati al client.
+// Load environment variables from .env file
+require("dotenv").config();
 
-const express = require("express"); // Importa il framework Express.
-const router = express.Router(); // Crea un router Express per raggruppare le rotte.
+// Express framework and middleware imports
+const express = require("express"); // Express application framework
+const env = require("../config/env"); // Environment variables (e.g., ports) - loaded first
+const session = require("express-session"); // Session management middleware
+const passport = require("../config/passport"); // Passport authentication configuration
+const googleAuthRoutes = require("./routes/auth_routes"); // Routes for Google OAuth flow
 
-const { weatherController } = require("../controllers/weatherController"); // Importa la funzione getWeather dal controller.
+// Initialize Express app
+const app = express();
 
-router.post("/weather", weatherController); // Associa la route POST /weather alla funzione del controller.
+app.set("trust proxy", 1); // Trust first proxy (useful if behind a reverse proxy)
 
-module.exports = router; // Esporta il router per essere usato nel server.
+// Configure session handling
+app.use(
+    session({
+        secret: env.SESSION_SECRET, // Secret used to sign the session ID cookie
+        resave: false, // Do not resave session if unchanged
+        saveUninitialized: false, // Do not create session until something stored
+        
+        cookie: {
+            httpOnly: true, // Prevent client-side JS from accessing the cookie
+            sameSite: "lax", // CSRF protection
+            secure: env.NODE_ENV === "production", // Use secure cookies in production only https
+            maxAge: 1000 * 60 * 60 * 8 // 8 hours
+        }
+
+        // Note: In production, consider using a persistent session store (e.g., Redis) instead of the default in-memory store
+    })
+);
+
+// Initialize Passport authentication middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Mount authentication routes at the root path
+app.use("/", googleAuthRoutes);
+
+// Start the authentication server listening on configured port
+app.listen(env.PORT, () => {
+    console.log(`Auth Server avviato sulla porta ${env.PORT}`);
+});
 ```
 
 ---
 
-### `backend/service/src/controllers/weatherController.js`
+#### `backend/auth-service/src/routes/auth_routes.js`
 
 ```javascript
-const fetch = require('node-fetch').default; // Importa node-fetch per fare richieste HTTP (non usato direttamente, ma lasciato per compatibilità).
-// const fetch = require("node-fetch"); // da installare npm install node-fetch@2 -- >
-// fetch una funzione che permette di fare richieste HTTP (GET, POST, PUT, DELETE) verso un server o una API. nel caso non nativo
-const { getWeather } = require("../utils/apiclient");          // Importa la funzione che chiama l'API meteo.
-const { normalizeWeather } = require("../utils/normalizeWeather"); // Importa la funzione che normalizza la risposta.
-const { validateCity } = require("../utils/validateCity");     // Importa la funzione di validazione della città.
-const { WEATHER_API_KEY } = require("../utils/constants");     // Importa la chiave API dalle variabili d'ambiente.
-const { logError } = require("../utils/logger");               // Importa l'helper per loggare gli errori.
+const express = require("express");
+const passport = require("passport");
+const env = require("../../config/env");
 
+const router = express.Router();
+
+/**
+ * Authentication routes:
+ * - GET /login:                  Redirects to Google OAuth flow
+ * - GET /google:                 Initiates Google OAuth authentication
+ * - GET /google/callback:        Handles the Google OAuth callback (matches Google Console URI)
+ * - GET /auth/google/callback:   Alias for backward compatibility
+ * - GET /validate:               Checks if the current session is authenticated
+ * - GET /logout:                 Destroys the session and logs the user out
+ */
+
+// Redirect /login to Google OAuth
+router.get("/login", (req, res) => {
+    res.redirect("/google");
+});
+
+// Initiate Google OAuth flow (requests profile and email scopes)
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+// Handle Google OAuth callback (supports both /google/callback and /auth/google/callback)
+router.get(
+    ["/google/callback", "/auth/google/callback"],
+    passport.authenticate("google", { 
+        failureRedirect: "/login", 
+        session: true 
+    }),
+
+    (req, res) => {
+        // Successful authentication – redirect to frontend (session carries the user)
+        res.redirect(env.FRONTEND_URL);
+    }
+);
+
+// Return the authenticated user's information if logged in
+router.get("/me", (req, res) => {
+    res.set("Cache-Control", "no-store"); // Prevent caching of sensitive user data
+    if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        return res.json({ 
+            authenticated: true, 
+            user: req.user,
+            firstName: req.user.firstName,
+            lastName: req.user.lastName,
+            displayName: req.user.displayName,
+            email: req.user.email
+        });
+    }
+    return res.json({ 
+        authenticated: false, 
+        user: null,
+        firstName: null,
+        lastName: null
+    });
+});
+
+
+
+// Validate whether the current session is authenticated
+router.get("/validate", (req, res) => {
+    if (req.isAuthenticated()) {
+        res.json({ authenticated: true, user: req.user });
+    } else {
+        res.json({ authenticated: false });
+    }
+});
+
+// Logout: destroy the session and redirect to the frontend login page
+router.get("/logout", (req, res) => {
+    req.logout((err) => {
+        if (err) return res.status(500).json({ error: "Logout failed" });
+        res.redirect(env.FRONTEND_URL + "login");
+    });
+});
+
+module.exports = router;
+```
+
+---
+
+
+### Backend — Servizio Principale (`backend/service`)
+
+#### `backend/service/config/env.js`
+
+```javascript
+const path = require("path");
+const fs = require("fs");
+
+const envPaths = [
+    path.join(__dirname, "../service.env"),
+    path.join(__dirname, "../.env"),
+    path.join(process.cwd(), "service.env"),
+    path.join(process.cwd(), ".env"),
+];
+
+for (const p of envPaths) {
+    if (fs.existsSync(p)) {
+        require("dotenv").config({ path: p });
+    }
+}
+require("dotenv").config();
+
+/**
+ * Validazione delle variabili d'ambiente obbligatorie all'avvio.
+ * Se una variabile manca, il processo termina immediatamente con codice di errore 1.
+ */
+const requiredEnvVars = [
+    "WEATHER_API_KEY",
+    "PORT"
+];
+
+requiredEnvVars.forEach(key => {
+    if (!process.env[key]) {
+        console.error(`Errore critico: la variabile d'ambiente ${key} non è definita.`);
+        process.exit(1);
+    }
+});
+
+module.exports = {
+    WEATHER_API_KEY: process.env.WEATHER_API_KEY,
+    PORT: process.env.PORT
+};
+```
+
+---
+
+#### `backend/service/config/paths.js`
+
+```javascript
+const path = require("path");
+
+/**
+ * Mappatura centralizzata dei percorsi del filesystem per il service.
+ * Consente di importare percorsi assoluti affidabili in qualsiasi modulo.
+ */
+const ROOT = path.join(__dirname, "..");
+const FRONTEND_PUBLIC = path.join(ROOT, "..", "..", "frontend", "public");
+
+module.exports = {
+    ROOT: ROOT,
+    SRC: path.join(ROOT, "src"),
+    PUBLIC: FRONTEND_PUBLIC,
+    CONTROLLERS: path.join(ROOT, "src", "controllers"),
+    ROUTES: path.join(ROOT, "src", "route"),
+    UTILS: path.join(ROOT, "src", "utils")
+};
+```
+
+---
+
+#### `backend/service/src/server.js`
+
+```javascript
+const express = require("express");
+const path = require("path");
+const bodyParser = require("body-parser");
+
+// Caricamento variabili d'ambiente (.env o service.env nel backend/service)
+const env = require("../config/env");
+
+const port = env.PORT || 3000;
+
+const app = express();
+
+// Middleware di parsing: elabora richieste JSON e form URL-encoded (POST da form HTML)
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Registrazione router applicativi
+const pageRoutes = require("./route/pageroutes");
+const weatherRoutes = require("./route/weather");
+const authRoutes = require("./route/auth");
+const signinRoutes = require("./route/signin");
+
+app.use("/", pageRoutes);    // Pagine HTML statiche (GET /, /about, /weather, etc.)
+app.use("/", weatherRoutes); // Endpoint meteo (POST /weather)
+app.use("/", authRoutes);    // Autenticazione (POST /login)
+app.use("/", signinRoutes);  // Registrazione utente (POST /signup)
+
+// Servizio file statici (HTML, CSS, JS, immagini da frontend/public)
+app.use(express.static(path.join(__dirname, "../../../frontend/public")));
+
+// Avvio del server HTTP
+app.listen(port, () => {
+    console.log("Server in ascolto alla porta " + port);
+    console.log("Accedi all'indirizzo http://localhost:" + port);
+});
+```
+
+---
+
+#### `backend/service/src/route/pageroutes.js`
+
+```javascript
+const express = require("express");
+const path = require("path");
+const paths = require("../../config/paths");
+
+const router = express.Router();
+
+/**
+ * Route GET per servire le pagine HTML statiche del frontend.
+ * I file inviati si trovano nella cartella frontend/public.
+ */
+router.get("/", (req, res) => {
+    res.sendFile(path.join(paths.PUBLIC, "index.html"));
+});
+
+router.get("/login", (req, res) => {
+    res.sendFile(path.join(paths.PUBLIC, "login.html"));
+});
+
+router.get("/signup", (req, res) => {
+    res.sendFile(path.join(paths.PUBLIC, "signup.html"));
+});
+
+router.get("/about", (req, res) => {
+    res.sendFile(path.join(paths.PUBLIC, "about.html"));
+});
+
+router.get("/contact", (req, res) => {
+    res.sendFile(path.join(paths.PUBLIC, "contact.html"));
+});
+
+router.get("/weather", (req, res) => {
+    res.sendFile(path.join(paths.PUBLIC, "weather.html"));
+});
+
+module.exports = router;
+```
+
+---
+
+#### `backend/service/src/route/weather.js`
+
+```javascript
+const express = require("express");
+const { weatherController } = require("../controllers/weatherController");
+
+const router = express.Router();
+
+/**
+ * Route POST per le richieste meteo.
+ * Riceve dal client il nome della città e delega la logica a weatherController.
+ */
+router.post("/weather", weatherController);
+
+module.exports = router;
+```
+
+---
+
+#### `backend/service/src/route/auth.js`
+
+```javascript
+const express = require("express");
+const { login } = require("../controllers/authcontroller");
+
+const router = express.Router();
+
+/**
+ * Route POST per l'autenticazione utente.
+ * Riceve username e password inviati dal form di login.
+ */
+router.post("/login", login);
+
+module.exports = router;
+```
+
+---
+
+#### `backend/service/src/route/signin.js`
+
+```javascript
+const express = require("express");
+const { signinController } = require("../controllers/signincontroller");
+
+const router = express.Router();
+
+/**
+ * Route POST per la registrazione utente.
+ * Riceve i dati inviati dal form di registrazione in signup.html.
+ */
+router.post("/signup", signinController);
+
+module.exports = router;
+```
+
+---
+
+#### `backend/service/src/controllers/weatherController.js`
+
+```javascript
+const { getWeather } = require("../utils/apiclient");
+const { normalizeWeather } = require("../utils/normalizeWeather");
+const { validateCity } = require("../utils/validateCity");
+const { WEATHER_API_KEY } = require("../../config/env");
+const { logError } = require("../utils/logger");
+
+/**
+ * Controller per la gestione delle richieste meteo.
+ * 1. Estrae e valida il nome della città dal body JSON
+ * 2. Chiama l'API esterna OpenWeatherMap tramite apiClient
+ * 3. Normalizza il payload JSON ricevuto estraendo i dati necessari per la vista
+ * 4. Gestisce errori di validazione, città non trovata (404) e fallimenti di rete
+ */
 exports.weatherController = async (req, res) => {
-  const city = req.body.city;                                  // Estrae il nome della città dal corpo della richiesta JSON.
+  const city = req.body.city;
 
-  console.log("DEBUG API KEY:", WEATHER_API_KEY);              // Stampa la chiave API per il debug.
-  console.log("DEBUG CITY:", city);                            // Stampa la città per il debug.
+  console.log("DEBUG API KEY:", WEATHER_API_KEY);
+  console.log("DEBUG CITY:", city);
 
-  if (!validateCity(city)) {                                   // Controlla che la città sia valida.
+  if (!validateCity(city)) {
     return res.json({ error: true, message: "Citta' non valida" });
   }
 
-  try {                                                        // Inizia un blocco per catturare eventuali errori.
-    const data = await getWeather(city, WEATHER_API_KEY);      // Chiama l'API meteo passando città e chiave.
+  try {
+    const data = await getWeather(city, WEATHER_API_KEY);
 
-    if (data.cod !== 200) {                                    // Se il codice di risposta dell'API non è 200, la città non è stata trovata.
+    if (String(data.cod) !== "200") {
       return res.json({ error: true, message: "Citta' non trovata" });
     }
 
-    return res.json(normalizeWeather(data));                   // Risponde con i dati normalizzati.
-  } catch (err) {                                              // Se la chiamata all'API fallisce.
-    logError(err);                                             // Scrive l'errore in console.
+    return res.json(normalizeWeather(data));
+  } catch (err) {
+    logError(err);
+    if (err && err.status === 404) {
+      return res.json({ error: true, message: "Citta' non trovata" });
+    }
     return res.json({ error: true, message: "Errore nel server" });
   }
 };
@@ -327,43 +993,119 @@ exports.weatherController = async (req, res) => {
 
 ---
 
-### `backend/service/src/utils/apiclient.js`
+#### `backend/service/src/controllers/authcontroller.js`
 
 ```javascript
-const fetch = require("node-fetch").default; // Importa node-fetch per fare richieste HTTP.
+/**
+ * Controller di login (versione mock/didattica).
+ * Verifica le credenziali cablate ('admin' / '1234') senza persistenza su DB.
+ * Invia una risposta HTML con l'esito della verifica.
+ */
+exports.login = (req, res) => {
+    const { username, password } = req.body;
 
-async function getWeather(city, apiKey) { // Definisce la funzione che chiama l'API meteo.
-    const response = await fetch( // Effettua la richiesta GET a OpenWeatherMap.
+    if (username === "admin" && password === "1234") {
+        res.send("Login è avvenuto con successo!");
+    } else {
+        res.send(
+            "Login fallito. <br> Username inserito: " +
+            username +
+            " <br> Password inserita: " +
+            password +
+            "."
+        );
+    }
+};
+```
+
+---
+
+#### `backend/service/src/controllers/signincontroller.js`
+
+```javascript
+/**
+ * Controller di registrazione (versione mock/didattica).
+ * Valida la presenza e il tipo dei campi obbligatori (username, password)
+ * e restituisce la conferma di avvenuta registrazione senza salvataggio persistente.
+ */
+exports.signinController = (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password || typeof username !== "string" || typeof password !== "string") {
+        return res.status(400).send("Username e password sono obbligatori.");
+    }
+
+    res.send("Registrazione completata per: " + username);
+};
+```
+
+---
+
+#### `backend/service/src/utils/apiclient.js`
+
+```javascript
+const fetch = require("node-fetch");
+
+/**
+ * Effettua la richiesta HTTP asincrona all'API OpenWeatherMap.
+ * Gestisce la codifica della query URL e il controllo dello status HTTP.
+ * @param {string} city - Nome della città richiesta
+ * @param {string} apiKey - Chiave API per l'accesso a OpenWeatherMap
+ * @returns {Promise<object>} - Risposta JSON dell'API meteo
+ */
+async function getWeather(city, apiKey) {
+    const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`
     );
-    return response.json(); // Restituisce la risposta convertita in JSON.
+
+    if (!response.ok) {
+        const error = new Error(`OpenWeatherMap error: ${response.status}`);
+        error.status = response.status;
+        throw error;
+    }
+
+    return response.json();
 }
 
-module.exports = { getWeather }; // Esporta la funzione per usarla nel controller.
+module.exports = { getWeather };
 ```
 
 ---
 
-### `backend/service/src/utils/validateCity.js`
+#### `backend/service/src/utils/validateCity.js`
 
 ```javascript
-function validateCity(city) { // Definisce la funzione di validazione della città.
-    const regex = /^[a-zA-Z\s]+$/; // Consente solo lettere e spazi.
-    return typeof city === "string" && // Verifica che sia una stringa.
-    city.trim().length >= 1 &&        // Verifica che non sia vuota.
-    regex.test(city);                 // Verifica che rispetti il formato consentito.
+/**
+ * Valida la stringa del nome della città inserita dall'utente.
+ * Accetta solo stringhe non vuote contenenti lettere e spazi.
+ * @param {string} city - Nome della città da validare
+ * @returns {boolean} - true se valida, altrimenti false
+ */
+function validateCity(city) {
+    const regex = /^[a-zA-Z\s]+$/;
+    return (
+        typeof city === "string" &&
+        city.trim().length >= 1 &&
+        regex.test(city)
+    );
 }
 
-module.exports = { validateCity }; // Esporta la funzione per usarla nel controller.
+module.exports = { validateCity };
 ```
 
 ---
 
-### `backend/service/src/utils/normalizeWeather.js`
+#### `backend/service/src/utils/normalizeWeather.js`
 
 ```javascript
-function normalizeWeather(data) { // Definisce la funzione che estrae i campi utili dalla risposta.
-    return { // Restituisce un oggetto con i dati meteo essenziali.
+/**
+ * Estrae e normalizza i campi essenziali dalla risposta grezza di OpenWeatherMap.
+ * Filtra dati complessi o superflui, restituendo un oggetto snello per il frontend.
+ * @param {object} data - Payload JSON grezzo restituito dall'API OpenWeatherMap
+ * @returns {object} - Oggetto con dati meteo pronti per il rendering
+ */
+function normalizeWeather(data) {
+    return {
         city: data.name,
         temperature: data.main.temp,
         humidity: data.main.humidity,
@@ -373,1068 +1115,814 @@ function normalizeWeather(data) { // Definisce la funzione che estrae i campi ut
     };
 }
 
-module.exports = { normalizeWeather }; // Esporta la funzione per usarla nel controller.
+module.exports = { normalizeWeather };
 ```
 
 ---
 
-### `backend/service/src/utils/logger.js`
+#### `backend/service/src/utils/logger.js`
 
 ```javascript
-function logError(err) { // Definisce una funzione per loggare un errore.
-    console.error(err);  // Stampa l'errore sulla console.
+/**
+ * Funzione helper per la registrazione centralizzata degli errori a console.
+ * @param {Error|any} err - Oggetto errore o messaggio da loggare
+ */
+function logError(err) {
+    console.error(err);
 }
 
-module.exports = { logError }; // Esporta la funzione per usarla in altri file.
+module.exports = { logError };
 ```
 
 ---
 
-### `backend/service/src/utils/constants.js`
+#### `backend/service/src/utils/constants.js`
 
 ```javascript
-module.exports = { 
-    WEATHER_API_KEY: process.env.WEATHER_API_KEY, // Legge la chiave API dalle variabili d'ambiente.
-    PORT: process.env.PORT,                       // Legge la porta dalle variabili d'ambiente.
+/**
+ * Costanti globali di configurazione caricate dalle variabili d'ambiente.
+ */
+module.exports = {
+    WEATHER_API_KEY: process.env.WEATHER_API_KEY,
+    PORT: process.env.PORT || 3000
 };
 ```
 
-> **Nota:** `constants.js` legge la configurazione dal file `.env` caricato in `server.js`. In produzione la chiave API non deve mai essere committata nel codice.
+---
+
+
+### Backend — Microservizio Ricercati FBI (`backend/wanted_service`)
+
+#### `backend/wanted_service/server.py`
+
+```python
+from datetime import date
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import json
+import os
+from pathlib import Path
+from urllib.error import URLError
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
+from utils.converter import item_to_json
+
+FBI_API_URL = "https://api.fbi.gov/wanted/v1/list"
+
+# Caricamento variabili d'ambiente da .env o wanted_service.env locale (se presente)
+for env_name in [".env", "wanted_service.env", "wanted.env"]:
+    env_file = Path(__file__).resolve().parent / env_name
+    if env_file.exists():
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    os.environ.setdefault(key.strip(), val.strip())
+        break
+
+PORT = int(os.environ.get("WANTED_PORT", "3002"))
+PUBLIC_DIR = Path(__file__).resolve().parents[2] / "frontend" / "public"
+
+
+def get_daily_item():
+    """
+    Interroga l'API pubblica dell'FBI per estrarre la lista dei ricercati.
+    Seleziona deterministicamente la scheda del giorno in base alla data odierna,
+    privilegiando i soggetti contrassegnati con poster_classification 'wanted'.
+    """
+    request = Request(
+        FBI_API_URL,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "FBI-Wanted-Daily-Service/1.0",
+        },
+    )
+
+    try:
+        with urlopen(request, timeout=10) as response:
+            payload = json.load(response)
+    except Exception as error:
+        raise RuntimeError("Impossibile contattare l'API FBI.") from error
+
+    items = payload.get("items") if isinstance(payload, dict) else None
+    if not isinstance(items, list):
+        raise RuntimeError("La risposta dell'API FBI non contiene una lista valida.")
+
+    valid_items = [item for item in items if isinstance(item, dict)]
+
+    # Filtra solo i soggetti ricercati attivi
+    wanted_items = [
+        item
+        for item in valid_items
+        if str(item.get("poster_classification", "")).lower() == "wanted"
+    ]
+
+    candidates = wanted_items or valid_items
+    if not candidates:
+        raise RuntimeError("L'API FBI non ha restituito schede disponibili.")
+
+    # Algoritmo deterministico giornaliero: stesso soggetto per tutti gli utenti nella stessa data
+    return candidates[(date.today().toordinal() - 1) % len(candidates)]
+
+
+class WantedHandler(SimpleHTTPRequestHandler):
+    """
+    Gestore HTTP per il servizio Wanted:
+    - Serve i file statici della cartella frontend/public
+    - GET / o vuoto: serve FBI.html
+    - GET /api/wanted/today: restituisce la scheda del ricercato del giorno in JSON
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=str(PUBLIC_DIR), **kwargs)
+
+    def send_content(self, content, content_type, status=200):
+        encoded = content.encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(encoded)))
+        self.end_headers()
+        self.wfile.write(encoded)
+
+    def do_GET(self):
+        path = urlparse(self.path).path
+
+        if path in ("/", ""):
+            self.path = "/FBI.html"
+
+        if path == "/api/wanted/today":
+            try:
+                person = item_to_json(get_daily_item())
+            except RuntimeError as error:
+                print(f"Errore API FBI: {error}", flush=True)
+                body = json.dumps({"error": str(error)}, ensure_ascii=False)
+                self.send_content(body, "application/json; charset=utf-8", 502)
+                return
+
+            body = json.dumps(person, ensure_ascii=False)
+            self.send_content(body, "application/json; charset=utf-8")
+            return
+
+        super().do_GET()
+
+
+if __name__ == "__main__":
+    print(f"Wanted service avviato su http://localhost:{PORT}", flush=True)
+    HTTPServer(("0.0.0.0", PORT), WantedHandler).serve_forever()
+```
 
 ---
 
-### `backend/service/src/route/auth.js`
+#### `backend/wanted_service/utils/converter.py`
+
+```python
+from urllib.parse import urlparse
+
+"""
+Modulo di utilità per la normalizzazione dei dati restituiti dall'API FBI.
+Estrae i soli campi visualizzati nella scheda frontend e valida gli URL.
+"""
+
+
+def item_to_json(item):
+    """
+    Riconverte l'oggetto grezzo dell'FBI in un dizionario con campi essenziali:
+    titolo, descrizione, categorie (subjects), eventuale ricompensa, immagine e link ufficiale.
+    """
+    images = item.get("images") or []
+    image_url = ""
+    if images and isinstance(images[0], dict):
+        image_url = safe_fbi_url(images[0].get("large") or images[0].get("thumb"))
+
+    subjects = item.get("subjects")
+    if not isinstance(subjects, list):
+        subjects = []
+
+    return {
+        "title": item.get("title") or "Scheda FBI",
+        "description": item.get("description") or "",
+        "subjects": subjects,
+        "reward": item.get("reward_text") or "",
+        "image": image_url,
+        "url": safe_fbi_url(item.get("url")),
+    }
+
+
+def safe_fbi_url(value):
+    """
+    Validatore di sicurezza per gli URL: ammette unicamente link HTTPS
+    appartenenti al dominio ufficiale 'www.fbi.gov'.
+    """
+    if not isinstance(value, str):
+        return ""
+    parsed = urlparse(value)
+    if parsed.scheme == "https" and parsed.hostname == "www.fbi.gov":
+        return value
+    return ""
+```
+
+---
+
+
+### Frontend — Componenti e Pagine HTML (`frontend/public`)
+
+#### `frontend/public/components/navbar.html`
+
+```html
+<!--
+  Componente di navigazione condiviso.
+  Viene caricato asincronamente tramite fetch() all'interno del contenitore #navbar di ciascuna pagina.
+  Tutti i link utilizzano il prefisso del Gateway /api/v1/ per garantire il corretto instradamento.
+  Gli elementi #nav-login-link e #nav-logout-link vengono mostrati/nascosti da auth.js in base alla sessione.
+-->
+<nav class="navbar">
+    <div class="nav-logo">My App</div>
+
+    <ul class="nav-links">
+        <li><a href="/api/v1/">Home</a></li>
+        <li><a href="/api/v1/about">About</a></li>
+        <li><a href="/api/v1/contact">Contact</a></li>
+        <li><a href="/api/v1/wanted/">FBI wanted</a></li>
+        <li><a href="/api/v1/weather">Weather</a></li>
+        <li id="nav-signup-item"><a href="/api/v1/signup">Signup</a></li>
+        <li id="nav-login-item"><a href="/api/v1/login">Login</a></li>
+        <li id="nav-user-item" style="display:none;">
+            <span id="nav-user" style="color:#4caf50;font-weight:bold;"></span>
+        </li>
+        <li id="nav-logout-item" style="display:none;">
+            <a href="/api/v1/auth/logout" style="color:#e53935;">Logout</a>
+        </li>
+    </ul>
+</nav>
+```
+
+---
+
+#### `frontend/public/components/footer.html`
+
+```html
+<!--
+  Componente piè di pagina condiviso.
+  Viene caricato asincronamente tramite fetch() all'interno del contenitore #footer di ciascuna pagina.
+-->
+<footer class="footer">
+    <p>&copy; 2026 My App. All rights reserved.</p>
+</footer>
+```
+
+---
+
+#### `frontend/public/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="/api/v1/css/index.css">
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+</head>
+
+<body>
+
+    <!-- Contenitore Navbar: popolato da auth.js -->
+    <div id="navbar"></div>
+
+    <!-- Contenitore principale della Home page -->
+    <div class="container">
+        <h1>Welcome to My App</h1>
+        <p>This is the home page of your application.</p>
+    </div>
+
+    <!-- Contenitore Footer: popolato da auth.js -->
+    <div id="footer"></div>
+
+    <script src="/api/v1/js/navbar.js"></script>
+</body>
+
+</html>
+```
+
+---
+
+#### `frontend/public/weather.html`
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather API</title>
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+    <link rel="stylesheet" href="/api/v1/css/weather.css">
+</head>
+
+<body>
+
+    <!-- Contenitore Navbar condivisa -->
+    <div id="navbar"></div>
+
+    <!-- Sezione Meteo: form di ricerca città e box per visualizzare i risultati dinamici -->
+    <div class="weather-wrapper">
+        <div class="weather-box">
+            <h2>Weather API</h2>
+            <p class="subtitle">Inserisci il nome della città per sapere le condizioni meteo</p>
+
+            <form id="weather-form">
+                <input type="text" id="city-input" name="city" placeholder="Nome della città" required>
+                <button type="submit">Invia</button>
+            </form>
+        </div>
+
+        <div class="weather-box" id="weather-result"></div>
+    </div>
+
+    <!-- Contenitore Footer condiviso -->
+    <div id="footer"></div>
+
+    <script src="/api/v1/js/navbar.js"></script>
+    <script src="/api/v1/js/weather.js"></script>
+</body>
+
+</html>
+```
+
+---
+
+#### `frontend/public/FBI.html`
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheda FBI del giorno</title>
+
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+    <link rel="stylesheet" href="/api/v1/css/weather.css">
+    <link rel="stylesheet" href="/api/v1/css/fbi.css">
+</head>
+
+<body>
+    <!-- La barra di navigazione è condivisa con le altre pagine. -->
+    <div id="navbar"></div>
+
+    <main class="weather-wrapper fbi-wrapper">
+        <section class="weather-box fbi-box">
+            <h1>Scheda FBI del giorno</h1>
+            <p class="subtitle">Una persona ricercata o una segnalazione dall'elenco pubblico FBI.</p>
+            <div id="fbi-result" aria-live="polite">Caricamento ...</div>
+        </section>
+    </main>
+
+    <!-- Anche il piè di pagina è condiviso con le altre pagine. -->
+    <div id="footer"></div>
+
+    <script src="/api/v1/js/navbar.js"></script>
+    <script src="/api/v1/js/FBI.js"></script>
+</body>
+</html>
+```
+
+---
+
+#### `frontend/public/login.html`
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/api/v1/css/login.css">
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+</head>
+
+<body>
+
+    <!-- Contenitore Navbar: popolato da auth.js -->
+    <div id="navbar"></div>
+
+    <!-- Login con username/password o Google OAuth -->
+    <div class="login-wrapper">
+        <div class="login-box">
+            <h2>Login</h2>
+
+            <!-- Login classico con username e password -->
+            <form action="/api/v1/login" method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Accedi</button>
+            </form>
+
+            <!-- Divisore OR -->
+            <div class="or-divider">
+                <span>oppure</span>
+            </div>
+
+            <!-- Login con Google (OAuth) -->
+            <a href="/api/v1/auth/google" class="btn-google">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo">
+                Accedi con Google
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Contenitore Footer: popolato da auth.js -->
+    <div id="footer"></div>
+
+    <script src="/api/v1/js/navbar.js"></script>
+</body>
+
+</html>
+```
+
+---
+
+#### `frontend/public/signup.html`
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/api/v1/css/signup.css">
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+</head>
+
+<body>
+
+    <!-- Contenitore Navbar: popolato da auth.js -->
+    <div id="navbar"></div>
+
+    <!-- Modulo di registrazione utente -->
+    <div class="signup-wrapper">
+        <div class="signup-box">
+            <h2>Sign Up</h2>
+
+            <!-- Registrazione classica con username e password -->
+            <form action="/api/v1/signup" method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Registrati</button>
+            </form>
+
+            <!-- Divisore OR -->
+            <div class="or-divider">
+                <span>oppure</span>
+            </div>
+
+            <!-- Registrazione con Google (stesso flusso OAuth del login) -->
+            <a href="/api/v1/auth/google" class="btn-google">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google logo">
+                Registrati con Google
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Contenitore Footer: popolato da auth.js -->
+    <div id="footer"></div>
+
+    <script src="/api/v1/js/navbar.js"></script>
+</body>
+
+</html>
+```
+
+---
+
+#### `frontend/public/about.html`
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About</title>
+    <link rel="stylesheet" href="/api/v1/css/about.css">
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+</head>
+
+<body>
+
+    <!-- Contenitore Navbar: popolato da navbar.js -->
+    <div id="navbar"></div>
+
+    <!-- Pagina descrittiva dell'applicazione -->
+    <main class="about-wrapper">
+        <div class="about-box">
+            <h2>About My App</h2>
+            <p>My App è una semplice applicazione web che dimostra l'uso di HTML, CSS e JavaScript per creare pagine moderne e responsive.</p>
+
+            <h3>Cosa offriamo</h3>
+            <ul class="feature-list">
+                <li>Interfaccia pulita e responsive</li>
+                <li>Navigazione semplice tra le pagine</li>
+                <li>Form di login e registrazione</li>
+                <li>Integrazione con API meteo</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Contenitore Footer: popolato da navbar.js -->
+    <div id="footer"></div>
+
+    <script src="/api/v1/js/navbar.js"></script>
+
+</body>
+
+</html>
+```
+
+---
+
+#### `frontend/public/contact.html`
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact</title>
+    <link rel="stylesheet" href="/api/v1/css/contact.css">
+    <link rel="stylesheet" href="/api/v1/css/navbar.css">
+    <link rel="stylesheet" href="/api/v1/css/footer.css">
+</head>
+
+<body>
+
+    <!-- Contenitore Navbar: popolato da navbar.js -->
+    <div id="navbar"></div>
+
+    <!-- Pagina contatti e recapiti -->
+    <main class="contact-wrapper">
+        <div class="contact-box">
+            <h2>Contact</h2>
+            <p>Hai domande o suggerimenti? Ecco come puoi contattarci.</p>
+
+            <ul class="contact-list">
+                <li>
+                    <strong>Email</strong>
+                    <span>info@myapp.example</span>
+                </li>
+                <li>
+                    <strong>Telefono</strong>
+                    <span>+39 123 456 7890</span>
+                </li>
+                <li>
+                    <strong>Indirizzo</strong>
+                    <span>Via Roma 1, 00100 Roma, Italia</span>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Contenitore Footer: popolato da navbar.js -->
+    <div id="footer"></div>
+
+    <script src="/api/v1/js/navbar.js"></script>
+
+</body>
+
+</html>
+```
+
+---
+
+
+### Frontend — Script Client-side (`frontend/public/js`)
+
+#### `frontend/public/js/navbar.js`
 
 ```javascript
-const express = require("express"); // Importa il framework Express.
-const router = express.Router(); // Crea un router Express per raggruppare le rotte.
+/**
+ * navbar.js — Gestore unificato per la barra di navigazione e l'autenticazione.
+ *
+ * Funzionalità:
+ *  1. Carica asincronamente i componenti condivisi (navbar e footer).
+ *  2. Interroga l'endpoint protetto /api/v1/auth/me (router.get /me di auth-service).
+ *  3. Aggiorna lo stato visivo della navbar in base alla sessione:
+ *     - Autenticato: mostra il nome dell'utente (firstName / displayName) e il pulsante Logout;
+ *     - Non autenticato: mostra i link di Login e Signup.
+ */
 
-const { login } = require("../controllers/authcontroller"); // Importa la funzione login dal controller.
+/**
+ * Carica un componente HTML all'interno del contenitore indicato via ID.
+ * @param {string} containerId ID dell'elemento DOM contenitore
+ * @param {string} url Percorso del componente HTML da recuperare
+ * @returns {Promise<void>}
+ */
+function loadComponent(containerId, url) {
+    const el = document.getElementById(containerId);
+    if (!el) return Promise.resolve();
 
-router.post("/login", login); // Associa la route POST /login alla funzione del controller.
+    return fetch(url)
+        .then(res => {
+            if (!res.ok) throw new Error(`Impossibile caricare il componente: ${url}`);
+            return res.text();
+        })
+        .then(html => {
+            el.innerHTML = html;
+        })
+        .catch(err => {
+            console.warn(`Errore nel caricamento del componente ${containerId}:`, err);
+        });
+}
 
-module.exports = router; // Esporta il router per essere usato nel server.
+/**
+ * Interroga l'endpoint /api/v1/auth/me e aggiorna gli elementi della navbar.
+ * @returns {Promise<void>}
+ */
+function applyAuthState() {
+    return fetch('/api/v1/auth/me', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+            const loginItem  = document.getElementById('nav-login-item');
+            const signupItem = document.getElementById('nav-signup-item');
+            const userItem   = document.getElementById('nav-user-item');
+            const logoutItem = document.getElementById('nav-logout-item');
+            const navUser    = document.getElementById('nav-user');
+
+            if (data && data.authenticated) {
+                const user = data.user || {};
+                const displayName = data.firstName || user.firstName || user.displayName || data.displayName || 'Utente';
+                const email = data.email || user.email || '';
+
+                if (navUser) {
+                    navUser.textContent = '✓ ' + displayName;
+                    navUser.title = email ? `${displayName} (${email})` : displayName;
+                }
+                if (loginItem)  loginItem.style.display  = 'none';
+                if (signupItem) signupItem.style.display = 'none';
+                if (userItem)   userItem.style.display   = '';
+                if (logoutItem) logoutItem.style.display = '';
+            } else {
+                if (loginItem)  loginItem.style.display  = '';
+                if (signupItem) signupItem.style.display = '';
+                if (userItem)   userItem.style.display   = 'none';
+                if (logoutItem) logoutItem.style.display = 'none';
+            }
+        })
+        .catch(() => {
+            // Se auth-service non risponde o la sessione non è valida, mostra i pulsanti di default
+            const loginItem  = document.getElementById('nav-login-item');
+            const signupItem = document.getElementById('nav-signup-item');
+            const userItem   = document.getElementById('nav-user-item');
+            const logoutItem = document.getElementById('nav-logout-item');
+
+            if (loginItem)  loginItem.style.display  = '';
+            if (signupItem) signupItem.style.display = '';
+            if (userItem)   userItem.style.display   = 'none';
+            if (logoutItem) logoutItem.style.display = 'none';
+        });
+}
+
+// Inizializzazione automatica al caricamento del DOM
+document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar');
+    const footerContainer = document.getElementById('footer');
+
+    const navbarPromise = (navbarContainer && !navbarContainer.children.length)
+        ? loadComponent('navbar', '/api/v1/components/navbar.html')
+        : Promise.resolve();
+
+    navbarPromise.then(applyAuthState);
+
+    if (footerContainer && !footerContainer.children.length) {
+        loadComponent('footer', '/api/v1/components/footer.html');
+    }
+});
+
+// Esposizione globale per consentire chiamate programmatiche
+window.loadComponent = loadComponent;
+window.applyAuthState = applyAuthState;
 ```
 
 ---
 
-### `backend/service/src/route/signin.js`
+#### `frontend/public/js/auth.js`
 
 ```javascript
-const express = require("express"); // Importa il framework Express.
-const router = express.Router(); // Crea un router Express per raggruppare le rotte.
+/**
+ * auth.js — backward compatibility wrapper pointing to /api/v1/auth/me.
+ *
+ * Responsibilities:
+ *  1. Load the shared navbar and footer components.
+ *  2. Call /api/v1/auth/me to check the current session and retrieve user details.
+ *  3. Update the navbar to show the user's name + Logout (authenticated)
+ *     or the Login link (unauthenticated).
+ */
 
-const { signinController } = require("../controllers/signincontroller"); // Importa la funzione signinController dal controller.
+/** Load an HTML component into a container element by id. */
+function loadComponent(containerId, url) {
+    return fetch(url)
+        .then(res => res.text())
+        .then(html => {
+            const el = document.getElementById(containerId);
+            if (el) el.innerHTML = html;
+        });
+}
 
-router.post("/signup", signinController); // Associa la route POST /signup alla funzione del controller.
+/** Apply auth state to the navbar after it has been injected. */
+function applyAuthState() {
+    return fetch('/api/v1/auth/me', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+            const loginItem  = document.getElementById('nav-login-item');
+            const signupItem = document.getElementById('nav-signup-item');
+            const userItem   = document.getElementById('nav-user-item');
+            const logoutItem = document.getElementById('nav-logout-item');
+            const navUser    = document.getElementById('nav-user');
 
-module.exports = router; // Esporta il router per essere usato nel server.
+            if (data && data.authenticated) {
+                const user = data.user || {};
+                const name = data.firstName || user.firstName || user.displayName || data.displayName || 'Utente';
+                const email = data.email || user.email || '';
+
+                if (navUser) {
+                    navUser.textContent = '✓ ' + name;
+                    navUser.title       = email ? `${name} (${email})` : name;
+                }
+                if (loginItem)  loginItem.style.display  = 'none';
+                if (signupItem) signupItem.style.display = 'none';
+                if (userItem)   userItem.style.display   = '';
+                if (logoutItem) logoutItem.style.display = '';
+            } else {
+                if (loginItem)  loginItem.style.display  = '';
+                if (signupItem) signupItem.style.display = '';
+                if (userItem)   userItem.style.display   = 'none';
+                if (logoutItem) logoutItem.style.display = 'none';
+            }
+        })
+        .catch(() => {}); // silently ignore if auth-service is unreachable
+}
+
+// Load navbar first, then apply auth state; load footer in parallel.
+document.addEventListener('DOMContentLoaded', () => {
+    loadComponent('navbar', '/api/v1/components/navbar.html')
+        .then(applyAuthState);
+
+    loadComponent('footer', '/api/v1/components/footer.html');
+});
 ```
 
 ---
 
-### `backend/service/src/controllers/authcontroller.js`
+#### `frontend/public/js/weather.js`
 
 ```javascript
-exports.login = (req, res) => {              // Definisce la funzione che elabora il login.
-    const{username, password} = req.body;      // Estrae username e password dal corpo della richiesta.
-
-    if(username === 'admin' && password === '1234'){ // Controlla se le credenziali sono corrette.
-        res.send('Login è avvenuto con successo!');  // Risponde con un messaggio di successo.
-    } else {                                     // Altrimenti le credenziali sono errate.
-        res.send('Login fallito. <br> Username inserito: ' + username + ' <br> Password inserita: ' + password + '.'); // Risponde con un messaggio di errore.
-    } // Chiude l'if-else. 
-}; // Chiude la funzione login.
-```
-
----
-
-### `backend/service/src/controllers/signincontroller.js`
-
-```javascript
-exports.signinController = (req, res) =>{             // Definisce la funzione che elabora la registrazione.
-    
-    const{username, password} = req.body;      // Estrae username e password dal corpo della richiesta.
-    
-    res.send('Registrazione completata per: ' + username); // Risponde confermando la registrazione.
-}; // Chiude la funzione signinController.
-```
-
----
-
-### `frontend/public/components/navbar.html`
-
-```html
-<nav class="navbar">                           <!-- Apre l'elemento semantico di navigazione con classe navbar. -->
-    <div class="nav-logo">My App</div>         <!-- Crea un div per il logo/testo del brand. -->
-
-    <ul class="nav-links">                     <!-- Apre un elenco non ordinato per i link di navigazione. -->
-        <li><a href="/">Home</a></li>          <!-- Elemento lista con link alla pagina Home. -->
-        <li><a href="/about">About</a></li>    <!-- Elemento lista con link alla pagina About. -->
-        <li><a href="/contact">Contact</a></li> <!-- Elemento lista con link alla pagina Contact. -->
-        <li><a href="/weather.html">Weather</a></li> <!-- Elemento lista con link al file statico weather.html. -->
-        <li><a href="/signup">Signup</a></li>  <!-- Elemento lista con link alla pagina Sign Up. -->
-        <li><a href="/login">Login</a></li>    <!-- Elemento lista con link alla pagina Login. -->
-    </ul>                                      <!-- Chiude l'elenco dei link. -->
-</nav>                                         <!-- Chiude la barra di navigazione. -->
-```
-
-### `frontend/public/components/footer.html`
-
-```html
-<footer class="footer">                        <!-- Apre l'elemento semantico footer con classe footer. -->
-    <p>&copy; 2023 My App. All rights reserved.</p> <!-- Paragrafo con il testo del copyright. -->
-</footer>                                      <!-- Chiude il footer. -->
-```
-
----
-
-### `frontend/public/index.html`
-
-```html
-<!DOCTYPE html>                                <!-- Dichiara che il documento è in HTML5. -->
-<html lang="en">                               <!-- Apre il documento HTML impostando la lingua inglese. -->
-
-<head>                                         <!-- Inizia la sezione head con metadati e risorse. -->
-    <meta charset="UTF-8">                     <!-- Imposta la codifica dei caratteri a UTF-8. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Rende la pagina responsive sui dispositivi mobili. -->
-    <title>Home</title>                        <!-- Definisce il titolo visualizzato nella scheda del browser. -->
-    <link rel="stylesheet" href="/css/index.css"> <!-- Collega il foglio di stile specifico della Home. -->
-    <link rel="stylesheet" href="/css/navbar.css"> <!-- Collega il foglio di stile condiviso della navbar. -->
-    <link rel="stylesheet" href="/css/footer.css"> <!-- Collega il foglio di stile condiviso del footer. -->
-</head>                                        <!-- Chiude la sezione head. -->
-
-<body>                                         <!-- Inizia il corpo visibile della pagina. -->
-
-    <div id="navbar">                          <!-- Crea un div vuoto dove verrà inserita la navbar. -->
-        <script>                               <!-- Inizia uno script JavaScript inline. -->
-            fetch('/components/navbar.html')   <!-- Fa una richiesta HTTP per scaricare navbar.html. -->
-                .then(response => response.text()) // Converte la risposta in testo puro.
-                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce il testo nel div navbar.
-        </script>                              <!-- Chiude lo script. -->
-    </div>                                     <!-- Chiude il div della navbar. -->
-
-    <div class="container">                    <!-- Crea il contenitore principale della Home. -->
-        <h1>Welcome to My App</h1>             <!-- Titolo principale di benvenuto. -->
-        <p>This is the home page of your application.</p> <!-- Paragrafo descrittivo. -->
-    </div>                                     <!-- Chiude il contenitore principale. -->
-
-    <div id="footer">                          <!-- Crea un div vuoto dove verrà inserito il footer. -->
-        <script>                               <!-- Inizia uno script JavaScript inline. -->
-            fetch('/components/footer.html')   <!-- Fa una richiesta HTTP per scaricare footer.html. -->
-                .then(response => response.text()) // Converte la risposta in testo.
-                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce il testo nel div footer.
-        </script>                              <!-- Chiude lo script. -->
-    </div>                                     <!-- Chiude il div del footer. -->
-
-</body>                                        <!-- Chiude il body. -->
-
-</html>                                        <!-- Chiude il documento HTML. -->
-```
-
----
-
-### `frontend/public/login.html`
-
-```html
-<!DOCTYPE html>                                <!-- Dichiara il documento HTML5. -->
-<html lang="it">                               <!-- Apre il documento HTML impostando la lingua italiana. -->
-
-<head>                                         <!-- Inizia la sezione head. -->
-    <meta charset="UTF-8">                     <!-- Imposta la codifica UTF-8. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Rende la pagina responsive. -->
-    <title>Login</title>                       <!-- Titolo della scheda del browser. -->
-    <link rel="stylesheet" href="/css/login.css"> <!-- Collega il CSS della pagina di login. -->
-    <link rel="stylesheet" href="/css/navbar.css"> <!-- Collega il CSS condiviso della navbar. -->
-    <link rel="stylesheet" href="/css/footer.css"> <!-- Collega il CSS condiviso del footer. -->
-</head>                                        <!-- Chiude la sezione head. -->
-
-<body>                                         <!-- Inizia il body. -->
-
-    <div id="navbar">                          <!-- Div vuoto per la navbar. -->
-        <script>                               <!-- Script per caricare la navbar. -->
-            fetch('/components/navbar.html')   <!-- Scarica il file della navbar. -->
-                .then(response => response.text()) // Converte la risposta in testo.
-                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce la navbar nel div.
-        </script>                              <!-- Chiude lo script. -->
-    </div>                                     <!-- Chiude il div della navbar. -->
-
-    <div class="login-wrapper">                <!-- Crea un wrapper per centrare il form. -->
-        <div class="login-box">                <!-- Crea il box bianco del form di login. -->
-            <h2>Login</h2>                     <!-- Titolo del form. -->
-            <form action="/login" method="POST"> <!-- Crea un form che invia i dati a /login con metodo POST. -->
-                <input type="text" name="username" placeholder="Username" required> <!-- Campo username obbligatorio. -->
-                <input type="password" name="password" placeholder="Password" required> <!-- Campo password obbligatorio. -->
-                <button type="submit">Accedi</button> <!-- Pulsante per inviare il form. -->
-            </form>                            <!-- Chiude il form. -->
-        </div>                                 <!-- Chiude il box di login. -->
-    </div>                                     <!-- Chiude il wrapper. -->
-
-    <div id="footer">                          <!-- Div vuoto per il footer. -->
-        <script>                               <!-- Script per caricare il footer. -->
-            fetch('/components/footer.html')   <!-- Scarica il file del footer. -->
-                .then(response => response.text()) // Converte la risposta in testo.
-                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce il footer nel div.
-        </script>                              <!-- Chiude lo script. -->
-    </div>                                     <!-- Chiude il div del footer. -->
-
-</body>                                        <!-- Chiude il body. -->
-
-</html>                                        <!-- Chiude il documento HTML. -->
-```
-
----
-
-### `frontend/public/signup.html`
-
-```html
-<!DOCTYPE html>                                <!-- Dichiara il documento HTML5. -->
-<html lang="it">                               <!-- Apre il documento in italiano. -->
-
-<head>                                         <!-- Inizia la sezione head. -->
-    <meta charset="UTF-8">                     <!-- Imposta la codifica UTF-8. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
-    <title>Sign Up</title>                     <!-- Titolo della pagina. -->
-    <link rel="stylesheet" href="/css/signup.css"> <!-- CSS della pagina Sign Up. -->
-    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS condiviso navbar. -->
-    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS condiviso footer. -->
-</head>                                        <!-- Chiude head. -->
-
-<body>                                         <!-- Inizia il body. -->
-
-    <div id="navbar">                          <!-- Div per la navbar. -->
-        <script>                               <!-- Script di caricamento navbar. -->
-            fetch('/components/navbar.html')   <!-- Scarica navbar.html. -->
-                .then(response => response.text()) // Converte in testo.
-                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce nel div.
-        </script>                              <!-- Chiude script. -->
-    </div>                                     <!-- Chiude div navbar. -->
-
-    <div class="signup-wrapper">               <!-- Wrapper per centrare il box. -->
-        <div class="signup-box">               <!-- Box del form di registrazione. -->
-            <h2>Sign Up</h2>                   <!-- Titolo del form. -->
-            <form action="/signup" method="POST"> <!-- Form che invia i dati a /signup con POST. -->
-                <input type="text" name="username" placeholder="Username" required> <!-- Campo username obbligatorio. -->
-                <input type="password" name="password" placeholder="Password" required> <!-- Campo password obbligatorio. -->
-                <button type="submit">Registrati</button> <!-- Pulsante di invio. -->
-            </form>                            <!-- Chiude il form. -->
-        </div>                                 <!-- Chiude il box. -->
-    </div>                                     <!-- Chiude il wrapper. -->
-
-    <div id="footer">                          <!-- Div per il footer. -->
-        <script>                               <!-- Script di caricamento footer. -->
-            fetch('/components/footer.html')   <!-- Scarica footer.html. -->
-                .then(response => response.text()) // Converte in testo.
-                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce nel div.
-        </script>                              <!-- Chiude script. -->
-    </div>                                     <!-- Chiude div footer. -->
-
-</body>                                        <!-- Chiude body. -->
-
-</html>                                        <!-- Chiude HTML. -->
-```
-
----
-
-### `frontend/public/weather.html`
-
-```html
-<!DOCTYPE html>                                <!-- Dichiara il documento HTML5. -->
-<html lang="it">                               <!-- Apre il documento in italiano. -->
-
-<head>                                         <!-- Inizia head. -->
-    <meta charset="UTF-8">                     <!-- Codifica UTF-8. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
-    <title>Weather API</title>                 <!-- Titolo della pagina. -->
-    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
-    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
-    <link rel="stylesheet" href="/css/weather.css"> <!-- CSS pagina meteo. -->
-</head>                                        <!-- Chiude head. -->
-
-<body>                                         <!-- Inizia body. -->
-
-    <!-- NAVBAR -->                            <!-- Commento che indica l'inizio della navbar. -->
-    <div id="navbar"></div>                    <!-- Div vuoto per la navbar. -->
-    <script>                                   <!-- Script per caricare la navbar. -->
-        fetch("/components/navbar.html")       <!-- Scarica navbar.html. -->
-            .then(res => res.text())           // Converte la risposta in testo.
-            .then(html => document.getElementById("navbar").innerHTML = html); // Inserisce nel div.
-    </script>                                  <!-- Chiude script. -->
-
-    <!-- WEATHER CONTENT -->                   <!-- Commento che indica l'inizio del contenuto meteo. -->
-    <div class="weather-wrapper">              <!-- Wrapper per centrare i box meteo. -->
-        <div class="weather-box">              <!-- Box con il form. -->
-            <h2>Weather API</h2>               <!-- Titolo della pagina meteo. -->
-            <p class="subtitle">Inserisci il nome della città per sapere le condizioni meteo</p> <!-- Istruzioni per l'utente. -->
-
-            <form id="weather-form" action="/weather" method="POST"> <!-- Form con id e action sul server. -->
-                <input type="text" id="city-input" name="city" placeholder="Nome della città" required> <!-- Input per la città. -->
-                <button type="submit">Invia</button> <!-- Pulsante per inviare la richiesta. -->
-            </form>                            <!-- Chiude il form. -->
-        </div>                                 <!-- Chiude il primo box. -->
-
-        <div class="weather-box" id="weather-result"></div> <!-- Box vuoto dove verrà mostrato il risultato. -->
-    </div>                                     <!-- Chiude il wrapper. -->
-
-    <!-- FOOTER -->                            <!-- Commento che indica l'inizio del footer. -->
-    <div id="footer"></div>                    <!-- Div vuoto per il footer. -->
-    <script>                                   <!-- Script per caricare il footer. -->
-        fetch("/components/footer.html")       <!-- Scarica footer.html. -->
-            .then(res => res.text())           // Converte in testo.
-            .then(html => document.getElementById("footer").innerHTML = html); // Inserisce nel div.
-    </script>                                  <!-- Chiude script. -->
-    <script src="/js/weather.js"></script>     <!-- Carica il file JavaScript che gestisce il form. -->
-</body>                                        <!-- Chiude body. -->
-
-</html>                                        <!-- Chiude HTML. -->
-```
-
----
-
-### `frontend/public/about.html`
-
-```html
-<!DOCTYPE html>                                <!-- HTML5. -->
-<html lang="it">                               <!-- Documento in italiano. -->
-
-<head>                                         <!-- Head. -->
-    <meta charset="UTF-8">                     <!-- UTF-8. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
-    <title>About</title>                        <!-- Titolo pagina. -->
-    <link rel="stylesheet" href="/css/about.css"> <!-- CSS pagina About. -->
-    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
-    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
-</head>                                        <!-- Chiude head. -->
-
-<body>                                         <!-- Body. -->
-
-    <div id="navbar">                          <!-- Div navbar. -->
-        <script>                               <!-- Caricamento navbar. -->
-            fetch('/components/navbar.html')   <!-- Scarica navbar.html. -->
-                .then(response => response.text()) // Testo.
-                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce.
-        </script>                              <!-- Chiude script. -->
-    </div>                                     <!-- Chiude div navbar. -->
-
-    <main class="about-wrapper">               <!-- Tag semantico per il contenuto principale. -->
-        <div class="about-box">                <!-- Box bianco del contenuto About. -->
-            <h2>About My App</h2>              <!-- Titolo. -->
-            <p>My App è una semplice applicazione web che dimostra l'uso di HTML, CSS e JavaScript per creare pagine moderne e responsive.</p> <!-- Descrizione. -->
-
-            <h3>Cosa offriamo</h3>             <!-- Sottotitolo. -->
-            <ul class="feature-list">          <!-- Elenco delle funzionalità. -->
-                <li>Interfaccia pulita e responsive</li> <!-- Elemento lista. -->
-                <li>Navigazione semplice tra le pagine</li> <!-- Elemento lista. -->
-                <li>Form di login e registrazione</li> <!-- Elemento lista. -->
-                <li>Integrazione con API meteo</li> <!-- Elemento lista. -->
-            </ul>                              <!-- Chiude elenco. -->
-        </div>                                 <!-- Chiude box. -->
-    </main>                                    <!-- Chiude contenuto principale. -->
-
-    <div id="footer">                          <!-- Div footer. -->
-        <script>                               <!-- Caricamento footer. -->
-            fetch('/components/footer.html')   <!-- Scarica footer.html. -->
-                .then(response => response.text()) // Testo.
-                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce.
-        </script>                              <!-- Chiude script. -->
-    </div>                                     <!-- Chiude div footer. -->
-
-</body>                                        <!-- Chiude body. -->
-
-</html>                                        <!-- Chiude HTML. -->
-```
-
----
-
-### `frontend/public/contact.html`
-
-```html
-<!DOCTYPE html>                                <!-- HTML5. -->
-<html lang="it">                               <!-- Italiano. -->
-
-<head>                                         <!-- Head. -->
-    <meta charset="UTF-8">                     <!-- UTF-8. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive. -->
-    <title>Contact</title>                      <!-- Titolo. -->
-    <link rel="stylesheet" href="/css/contact.css"> <!-- CSS Contact. -->
-    <link rel="stylesheet" href="/css/navbar.css"> <!-- CSS navbar. -->
-    <link rel="stylesheet" href="/css/footer.css"> <!-- CSS footer. -->
-</head>                                        <!-- Chiude head. -->
-
-<body>                                         <!-- Body. -->
-
-    <div id="navbar">                          <!-- Div navbar. -->
-        <script>                               <!-- Caricamento navbar. -->
-            fetch('/components/navbar.html')   <!-- Scarica navbar.html. -->
-                .then(response => response.text()) // Testo.
-                .then(html => document.getElementById('navbar').innerHTML = html); // Inserisce.
-        </script>                              <!-- Chiude script. -->
-    </div>                                     <!-- Chiude div navbar. -->
-
-    <main class="contact-wrapper">             <!-- Contenuto principale. -->
-        <div class="contact-box">              <!-- Box contatti. -->
-            <h2>Contact</h2>                   <!-- Titolo. -->
-            <p>Hai domande o suggerimenti? Ecco come puoi contattarci.</p> <!-- Introduzione. -->
-
-            <ul class="contact-list">          <!-- Elenco contatti. -->
-                <li>                           <!-- Primo contatto. -->
-                    <strong>Email</strong>     <!-- Etichetta Email. -->
-                    <span>info@myapp.example</span> <!-- Indirizzo email. -->
-                </li>                          <!-- Chiude primo contatto. -->
-                <li>                           <!-- Secondo contatto. -->
-                    <strong>Telefono</strong>  <!-- Etichetta Telefono. -->
-                    <span>+39 123 456 7890</span> <!-- Numero di telefono. -->
-                </li>                          <!-- Chiude secondo contatto. -->
-                <li>                           <!-- Terzo contatto. -->
-                    <strong>Indirizzo</strong> <!-- Etichetta Indirizzo. -->
-                    <span>Via Roma 1, 00100 Roma, Italia</span> <!-- Indirizzo fisico. -->
-                </li>                          <!-- Chiude terzo contatto. -->
-            </ul>                              <!-- Chiude elenco. -->
-        </div>                                 <!-- Chiude box. -->
-    </main>                                    <!-- Chiude contenuto principale. -->
-
-    <div id="footer">                          <!-- Div footer. -->
-        <script>                               <!-- Caricamento footer. -->
-            fetch('/components/footer.html')   <!-- Scarica footer.html. -->
-                .then(response => response.text()) // Testo.
-                .then(html => document.getElementById('footer').innerHTML = html); // Inserisce.
-        </script>                              <!-- Chiude script. -->
-    </div>                                     <!-- Chiude div footer. -->
-
-</body>                                        <!-- Chiude body. -->
-
-</html>                                        <!-- Chiude HTML. -->
-```
-
----
-
-### `frontend/public/css/index.css`
-
-```css
-/*  RESET  */                                  /* Commento di sezione per il reset CSS. */
-* {                                            /* Selettore universale: applica a tutti gli elementi. */
-    margin: 0;                                /* Azzera il margine esterno predefinito. */
-    padding: 0;                               /* Azzera il padding interno predefinito. */
-    box-sizing: border-box;                   /* Include bordi e padding nelle dimensioni totali. */
-}                                              /* Chiude il selettore universale. */
-
-/*  BODY  */                                   /* Commento di sezione per il body. */
-body {                                         /* Selettore per l'elemento body. */
-    font-family: Arial, sans-serif;            /* Imposta il font e un font di fallback. */
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Applica uno sfondo a gradiente. */
-    min-height: 100vh;                         /* Imposta l'altezza minima uguale all'altezza della finestra. */
-
-    display: flex;                             /* Attiva il layout flessivo. */
-    flex-direction: column; /* IMPORTANTE */    /* Dispone gli elementi figli in colonna. */
-}                                              /* Chiude il selettore body. */
-
-/*  CONTAINER  */                              /* Commento di sezione per il contenitore. */
-.container {                                   /* Selettore per il contenitore principale. */
-    flex: 1; /* OCCUPA LO SPAZIO DISPONIBILE */ /* Fa espandere il contenitore per occupare lo spazio rimanente. */
-    display: flex;                             /* Attiva il layout flessivo. */
-    flex-direction: column;                    /* Dispone i figli in colonna. */
-    justify-content: center;                   /* Centra i figli verticalmente. */
-    align-items: center;                       /* Centra i figli orizzontalmente. */
-    padding: 20px;                             /* Aggiunge spazio interno di 20 pixel. */
-}                                              /* Chiude .container. */
-
-.container h1 {                                /* Selettore per il titolo dentro .container. */
-    font-size: 40px;                           /* Imposta la dimensione del carattere a 40 pixel. */
-    color: #333;                               /* Imposta il colore del testo a grigio scuro. */
-    margin-bottom: 20px;                       /* Aggiunge margine inferiore di 20 pixel. */
-}                                              /* Chiude .container h1. */
-
-.container p {                                 /* Selettore per il paragrafo dentro .container. */
-    font-size: 18px;                           /* Imposta la dimensione del carattere a 18 pixel. */
-    color: #555;                               /* Imposta il colore del testo a grigio medio. */
-}                                              /* Chiude .container p. */
-```
-
----
-
-### `frontend/public/css/login.css`
-
-```css
- /*  RESET MINIMO  */                          /* Commento di sezione per il reset minimo. */
-* {                                            /* Selettore universale. */
-    box-sizing: border-box;                    /* Include bordi e padding nelle dimensioni. */
-    margin: 0;                                 /* Azzera i margini. */
-    padding: 0;                                /* Azzera i padding. */
-}                                              /* Chiude il reset. */
-
-/*  BODY  */                                   /* Sezione body. */
-body {                                         /* Selettore body. */
-    font-family: Arial, sans-serif;            /* Font principale e fallback. */
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Sfondo gradiente. */
-    display: flex;                             /* Layout flessivo. */
-    flex-direction: column;                    /* Disposizione verticale. */
-    min-height: 100vh;                         /* Altezza minima finestra. */
-}                                              /* Chiude body. */
-
-/*  LOGIN WRAPPER  */                          /* Sezione wrapper login. */
-.login-wrapper {                               /* Selettore del wrapper. */
-    flex: 1;                                   /* Occupa lo spazio verticale disponibile. */
-    display: flex;                             /* Layout flessivo. */
-    justify-content: center;                   /* Centra orizzontalmente. */
-    align-items: center;                       /* Centra verticalmente. */
-}                                              /* Chiude wrapper. */
-
-/*  LOGIN BOX  */                              /* Sezione box login. */
-.login-box {                                   /* Selettore del box bianco. */
-    background: #ffffff;                       /* Sfondo bianco. */
-    padding: 30px 35px;                        /* Spazio interno verticale e orizzontale. */
-    border-radius: 12px;                       /* Angoli arrotondati. */
-    width: 320px;                              /* Larghezza fissa del box. */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Ombra sotto il box. */
-    animation: fadeIn 0.4s ease;               /* Applica l'animazione fadeIn. */
-}                                              /* Chiude box. */
-
-/* Titolo */                                   /* Commento per il titolo. */
-.login-box h2 {                                /* Selettore del titolo h2 dentro il box. */
-    text-align: center;                        /* Centra il testo. */
-    margin-bottom: 25px;                       /* Margine inferiore. */
-    color: #333;                               /* Colore grigio scuro. */
-    font-weight: 600;                          /* Spessore del font semi-bold. */
-}                                              /* Chiude h2. */
-
-/* Input */                                    /* Commento per gli input. */
-.login-box input {                             /* Selettore degli input nel form. */
-    width: 100%;                               /* Larghezza piena del box. */
-    padding: 12px;                             /* Spazio interno. */
-    margin: 10px 0 18px 0;                     /* Margine sopra, destra, sotto, sinistra. */
-    border: 2px solid #d0d0d0;                 /* Bordo grigio chiaro. */
-    border-radius: 6px;                        /* Angoli arrotondati. */
-    font-size: 15px;                           /* Dimensione del testo. */
-    transition: border-color 0.2s;             /* Transizione morbida del colore del bordo. */
-}                                              /* Chiude input. */
-
-.login-box input:focus {                       /* Stile degli input quando sono selezionati. */
-    border-color: #0078ff;                     /* Bordo azzurro. */
-    outline: none;                             /* Rimuove il contorno predefinito del browser. */
-}                                              /* Chiude focus. */
-
-/* Bottone */                                  /* Commento per il bottone. */
-.login-box button {                            /* Selettore del pulsante nel box. */
-    width: 100%;                               /* Larghezza piena. */
-    padding: 12px;                             /* Spazio interno. */
-    background: #0078ff;                       /* Sfondo azzurro. */
-    color: white;                              /* Testo bianco. */
-    border: none;                              /* Nessun bordo. */
-    border-radius: 6px;                        /* Angoli arrotondati. */
-    font-size: 16px;                           /* Dimensione testo. */
-    cursor: pointer;                           /* Cursore a mano al passaggio. */
-    transition: background 0.25s, transform 0.1s; /* Transizioni per colore e scala. */
-}                                              /* Chiude button. */
-
-.login-box button:hover {                      /* Stile del pulsante al passaggio del mouse. */
-    background: #005fcc;                       /* Sfondo azzurro più scuro. */
-}                                              /* Chiude hover. */
-
-.login-box button:active {                     /* Stile del pulsante nel momento del click. */
-    transform: scale(0.98);                    /* Riduce leggermente la dimensione. */
-}                                              /* Chiude active. */
-
-/* Animazione */                               /* Commento per l'animazione. */
-@keyframes fadeIn {                            /* Definisce l'animazione chiamata fadeIn. */
-    from { opacity: 0; transform: translateY(10px); } /* Stato iniziale: invisibile e spostato verso il basso. */
-    to   { opacity: 1; transform: translateY(0); } /* Stato finale: visibile e nella posizione normale. */
-}                                              /* Chiude keyframes. */
-```
-
----
-
-### `frontend/public/css/signup.css`
-
-```css
- /*  RESET MINIMO  */                          /* Sezione reset. */
-* {                                            /* Selettore universale. */
-    box-sizing: border-box;                    /* Include bordi e padding nelle dimensioni. */
-    margin: 0;                                 /* Azzera margini. */
-    padding: 0;                                /* Azzera padding. */
-}                                              /* Chiude reset. */
-
-/*  BODY  */                                   /* Sezione body. */
-body {                                         /* Selettore body. */
-    font-family: Arial, sans-serif;            /* Font. */
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Sfondo gradiente. */
-    display: flex;                             /* Layout flessivo. */
-    flex-direction: column;                    /* Colonna. */
-    min-height: 100vh;                         /* Altezza minima. */
-}                                              /* Chiude body. */
-
-/*  SIGNUP WRAPPER  */                         /* Sezione wrapper registrazione. */
-.signup-wrapper {                              /* Selettore wrapper. */
-    flex: 1;                                   /* Espande per riempire lo spazio. */
-    display: flex;                             /* Layout flessivo. */
-    justify-content: center;                   /* Centra orizzontalmente. */
-    align-items: center;                       /* Centra verticalmente. */
-}                                              /* Chiude wrapper. */
-
-/*  SIGNUP BOX  */                             /* Sezione box registrazione. */
-.signup-box {                                  /* Selettore box. */
-    background: #ffffff;                       /* Sfondo bianco. */
-    padding: 30px 35px;                        /* Spazio interno. */
-    border-radius: 12px;                       /* Angoli arrotondati. */
-    width: 320px;                              /* Larghezza fissa. */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Ombra. */
-    animation: fadeIn 0.4s ease;               /* Animazione di comparsa. */
-}                                              /* Chiude box. */
-
-/* Titolo */                                   /* Titolo. */
-.signup-box h2 {                               /* Selettore h2. */
-    text-align: center;                        /* Centrato. */
-    margin-bottom: 25px;                       /* Margine inferiore. */
-    color: #333;                               /* Colore. */
-    font-weight: 600;                          /* Spessore. */
-}                                              /* Chiude h2. */
-
-/* Input */                                    /* Input. */
-.signup-box input {                            /* Selettore input. */
-    width: 100%;                               /* Larghezza piena. */
-    padding: 12px;                             /* Spazio interno. */
-    margin: 10px 0 18px 0;                     /* Margini. */
-    border: 2px solid #d0d0d0;                 /* Bordo. */
-    border-radius: 6px;                        /* Angoli. */
-    font-size: 15px;                           /* Dimensione testo. */
-    transition: border-color 0.2s;             /* Transizione bordo. */
-}                                              /* Chiude input. */
-
-.signup-box input:focus {                      /* Focus input. */
-    border-color: #0078ff;                     /* Bordo azzurro. */
-    outline: none;                             /* Rimuove outline. */
-}                                              /* Chiude focus. */
-
-/* Bottone */                                  /* Bottone. */
-.signup-box button {                           /* Selettore bottone. */
-    width: 100%;                               /* Larghezza piena. */
-    padding: 12px;                             /* Spazio interno. */
-    background: #0078ff;                       /* Sfondo. */
-    color: white;                              /* Testo. */
-    border: none;                              /* Nessun bordo. */
-    border-radius: 6px;                        /* Angoli. */
-    font-size: 16px;                           /* Dimensione. */
-    cursor: pointer;                           /* Cursore pointer. */
-    transition: background 0.25s, transform 0.1s; /* Transizioni. */
-}                                              /* Chiude bottone. */
-
-.signup-box button:hover {                     /* Hover bottone. */
-    background: #005fcc;                       /* Sfondo più scuro. */
-}                                              /* Chiude hover. */
-
-.signup-box button:active {                    /* Active bottone. */
-    transform: scale(0.98);                    /* Scala ridotta. */
-}                                              /* Chiude active. */
-
-/* Animazione */                               /* Animazione. */
-@keyframes fadeIn {                            /* Definizione animazione. */
-    from { opacity: 0; transform: translateY(10px); } /* Inizio. */
-    to   { opacity: 1; transform: translateY(0); } /* Fine. */
-}                                              /* Chiude keyframes. */
-```
-
----
-
-### `frontend/public/css/weather.css`
-
-```css
-
-/* ===== RESET ===== */                        /* Sezione reset. */
-* {                                            /* Universale. */
-    margin: 0;                                 /* Azzera margini. */
-    padding: 0;                                /* Azzera padding. */
-    box-sizing: border-box;                    /* Include bordi e padding. */
-}                                              /* Chiude reset. */
-
-/* ===== BODY ===== */                         /* Sezione body. */
-body {                                         /* Body. */
-    font-family: Arial, sans-serif;            /* Font. */
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Sfondo gradiente. */
-    min-height: 100vh;                         /* Altezza minima. */
-    display: flex;                             /* Flex. */
-    flex-direction: column;                    /* Colonna. */
-}                                              /* Chiude body. */
-
-/* ===== WRAPPER ===== */                      /* Sezione wrapper. */
-.weather-wrapper {                             /* Wrapper meteo. */
-    flex: 1;                                   /* Occupa spazio disponibile. */
-    display: flex;                             /* Flex. */
-    flex-direction: column; /* <<< QUESTA È LA CHIAVE */ /* Dispone i box in colonna. */
-    justify-content: center;                   /* Centra verticalmente. */
-    align-items: center;                       /* Centra orizzontalmente. */
-    gap: 20px; /* distanza tra i due box */    /* Spazio tra i due box. */
-}                                              /* Chiude wrapper. */
-/* ===== BOX ===== */                          /* Sezione box. */
-.weather-box {                                 /* Box meteo. */
-    background: #ffffff;                       /* Sfondo bianco. */
-    padding: 30px 35px;                        /* Spazio interno. */
-    border-radius: 12px;                       /* Angoli arrotondati. */
-    width: 380px;                              /* Larghezza fissa. */
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);   /* Ombra. */
-    animation: fadeIn 0.4s ease;               /* Animazione. */
-    text-align: center;                        /* Testo centrato. */
-}                                              /* Chiude box. */
-
-.weather-box h2 {                              /* Titolo h2. */
-    margin-bottom: 15px;                       /* Margine inferiore. */
-    color: #333;                               /* Colore. */
-    font-weight: 600;                          /* Spessore. */
-}                                              /* Chiude h2. */
-
-.subtitle {                                    /* Classe subtitle. */
-    margin-bottom: 25px;                       /* Margine. */
-    color: #555;                               /* Colore. */
-    font-size: 16px;                           /* Dimensione. */
-}                                              /* Chiude subtitle. */
-
-/* Input */                                    /* Input. */
-.weather-box input {                           /* Selettore input. */
-    width: 100%;                               /* Larghezza piena. */
-    padding: 12px;                             /* Spazio interno. */
-    margin-bottom: 18px;                       /* Margine inferiore. */
-    border: 2px solid #d0d0d0;                 /* Bordo. */
-    border-radius: 6px;                        /* Angoli. */
-    font-size: 15px;                           /* Dimensione. */
-    transition: border-color 0.2s;             /* Transizione. */
-}                                              /* Chiude input. */
-
-.weather-box input:focus {                     /* Focus. */
-    border-color: #0078ff;                     /* Bordo azzurro. */
-    outline: none;                             /* Rimuove outline. */
-}                                              /* Chiude focus. */
-
-/* Button */                                   /* Bottone. */
-.weather-box button {                          /* Selettore bottone. */
-    width: 100%;                               /* Larghezza piena. */
-    padding: 12px;                             /* Spazio interno. */
-    background: #0078ff;                       /* Sfondo. */
-    color: white;                              /* Testo. */
-    border: none;                              /* Nessun bordo. */
-    border-radius: 6px;                        /* Angoli. */
-    font-size: 16px;                           /* Dimensione. */
-    cursor: pointer;                           /* Pointer. */
-    transition: background 0.25s, transform 0.1s; /* Transizioni. */
-}                                              /* Chiude bottone. */
-
-.weather-box button:hover {                    /* Hover. */
-    background: #005fcc;                       /* Sfondo scuro. */
-}                                              /* Chiude hover. */
-
-.weather-box button:active {                   /* Active. */
-    transform: scale(0.98);                    /* Riduce scala. */
-}                                              /* Chiude active. */
-#weather-result {                              /* Selettore del box risultato. */
-    display: none; /* nascosto all'inizio */   /* Nasconde il box all'avvio. */
-}                                              /* Chiude selettore. */
-
-/* Animation */                                /* Animazione. */
-@keyframes fadeIn {                            /* Definizione. */
-    from { opacity: 0; transform: translateY(10px); } /* Inizio. */
-    to   { opacity: 1; transform: translateY(0); } /* Fine. */
-}                                              /* Chiude keyframes. */
-```
-
----
-
-### `frontend/public/css/about.css`
-
-```css
-/* ===== RESET ===== */                        /* Sezione reset. */
-* {                                            /* Universale. */
-    margin: 0;                                 /* Azzera margini. */
-    padding: 0;                                /* Azzera padding. */
-    box-sizing: border-box;                    /* Include bordi e padding. */
-}                                              /* Chiude reset. */
-
-/* ===== BODY ===== */                         /* Sezione body. */
-body {                                         /* Body. */
-    font-family: Arial, sans-serif;            /* Font. */
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Sfondo gradiente. */
-    min-height: 100vh;                         /* Altezza minima. */
-    display: flex;                             /* Flex. */
-    flex-direction: column;                    /* Colonna. */
-}                                              /* Chiude body. */
-
-/* ===== ABOUT WRAPPER ===== */                /* Sezione wrapper About. */
-.about-wrapper {                               /* Wrapper. */
-    flex: 1;                                   /* Occupa spazio. */
-    display: flex;                             /* Flex. */
-    justify-content: center;                   /* Centra orizzontalmente. */
-    align-items: center;                       /* Centra verticalmente. */
-    padding: 20px;                             /* Spazio interno. */
-}                                              /* Chiude wrapper. */
-
-/* ===== ABOUT BOX ===== */                    /* Sezione box About. */
-.about-box {                                   /* Box. */
-    background: #ffffff;                       /* Sfondo bianco. */
-    padding: 40px;                             /* Spazio interno. */
-    border-radius: 12px;                       /* Angoli. */
-    width: 100%;                               /* Larghezza piena del contenitore. */
-    max-width: 600px;                          /* Larghezza massima. */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Ombra. */
-    animation: fadeIn 0.4s ease;               /* Animazione. */
-}                                              /* Chiude box. */
-
-.about-box h2 {                                /* Titolo h2. */
-    text-align: center;                        /* Centrato. */
-    margin-bottom: 20px;                       /* Margine. */
-    color: #333;                               /* Colore. */
-    font-weight: 600;                          /* Spessore. */
-}                                              /* Chiude h2. */
-
-.about-box h3 {                                /* Sottotitolo h3. */
-    margin-top: 25px;                          /* Margine superiore. */
-    margin-bottom: 15px;                       /* Margine inferiore. */
-    color: #333;                               /* Colore. */
-    font-weight: 600;                          /* Spessore. */
-}                                              /* Chiude h3. */
-
-.about-box p {                                 /* Paragrafo. */
-    color: #555;                               /* Colore. */
-    font-size: 16px;                           /* Dimensione. */
-    line-height: 1.6;                          /* Altezza riga. */
-}                                              /* Chiude p. */
-
-/* ===== FEATURE LIST ===== */                 /* Sezione lista funzionalità. */
-.feature-list {                                /* Selettore lista. */
-    list-style: none;                          /* Rimuove i pallini predefiniti. */
-    padding: 0;                                /* Azzera padding. */
-}                                              /* Chiude lista. */
-
-.feature-list li {                             /* Elemento della lista. */
-    padding: 10px 0 10px 28px;                 /* Spazio interno con spazio a sinistra per il segno. */
-    color: #555;                               /* Colore. */
-    position: relative;                        /* Posizione relativa per il pseudo-elemento. */
-}                                              /* Chiude li. */
-
-.feature-list li::before {                     /* Pseudo-elemento prima di ogni elemento lista. */
-    content: "✓";                              /* Inserisce il segno di spunta. */
-    position: absolute;                        /* Posizionamento assoluto rispetto al li. */
-    left: 0;                                   /* Allinea a sinistra. */
-    color: #0078ff;                            /* Colore azzurro. */
-    font-weight: bold;                         /* Grassetto. */
-}                                              /* Chiude pseudo-elemento. */
-
-/* ===== ANIMATION ===== */                    /* Sezione animazione. */
-@keyframes fadeIn {                            /* Definizione. */
-    from { opacity: 0; transform: translateY(10px); } /* Inizio. */
-    to { opacity: 1; transform: translateY(0); } /* Fine. */
-}                                              /* Chiude keyframes. */
-
-/* ===== MOBILE ===== */                       /* Sezione adattamento mobile. */
-@media (max-width: 600px) {                    /* Regola attiva solo se lo schermo è più stretto di 600px. */
-    .about-box {                               /* Box About su mobile. */
-        padding: 25px;                         /* Riduce il padding. */
-    }                                          /* Chiude box mobile. */
-}                                              /* Chiude media query. */
-```
-
----
-
-### `frontend/public/css/contact.css`
-
-```css
-/* ===== RESET ===== */                        /* Sezione reset. */
-* {                                            /* Universale. */
-    margin: 0;                                 /* Azzera margini. */
-    padding: 0;                                /* Azzera padding. */
-    box-sizing: border-box;                    /* Include bordi e padding. */
-}                                              /* Chiude reset. */
-
-/* ===== BODY ===== */                         /* Sezione body. */
-body {                                         /* Body. */
-    font-family: Arial, sans-serif;            /* Font. */
-    background: linear-gradient(135deg, #e3e9f0, #cfd9e8); /* Sfondo gradiente. */
-    min-height: 100vh;                         /* Altezza minima. */
-    display: flex;                             /* Flex. */
-    flex-direction: column;                    /* Colonna. */
-}                                              /* Chiude body. */
-
-/* ===== CONTACT WRAPPER ===== */              /* Sezione wrapper contatti. */
-.contact-wrapper {                             /* Wrapper. */
-    flex: 1;                                   /* Occupa spazio. */
-    display: flex;                             /* Flex. */
-    justify-content: center;                   /* Centra orizzontalmente. */
-    align-items: center;                       /* Centra verticalmente. */
-    padding: 20px;                             /* Spazio interno. */
-}                                              /* Chiude wrapper. */
-
-/* ===== CONTACT BOX ===== */                  /* Sezione box contatti. */
-.contact-box {                                 /* Box. */
-    background: #ffffff;                       /* Sfondo bianco. */
-    padding: 40px;                             /* Spazio interno. */
-    border-radius: 12px;                       /* Angoli. */
-    width: 100%;                               /* Larghezza piena. */
-    max-width: 500px;                          /* Larghezza massima. */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Ombra. */
-    animation: fadeIn 0.4s ease;               /* Animazione. */
-}                                              /* Chiude box. */
-
-.contact-box h2 {                              /* Titolo h2. */
-    text-align: center;                        /* Centrato. */
-    margin-bottom: 15px;                       /* Margine. */
-    color: #333;                               /* Colore. */
-    font-weight: 600;                          /* Spessore. */
-}                                              /* Chiude h2. */
-
-.contact-box > p {                             /* Paragrafo figlio diretto. */
-    text-align: center;                        /* Centrato. */
-    color: #555;                               /* Colore. */
-    margin-bottom: 25px;                       /* Margine inferiore. */
-}                                              /* Chiude p. */
-
-/* ===== CONTACT LIST ===== */                 /* Sezione lista contatti. */
-.contact-list {                                /* Lista. */
-    list-style: none;                          /* Rimuove pallini. */
-    padding: 0;                                /* Azzera padding. */
-}                                              /* Chiude lista. */
-
-.contact-list li {                             /* Elemento lista. */
-    display: flex;                             /* Flex. */
-    flex-direction: column;                    /* Etichetta sopra valore. */
-    padding: 15px 0;                           /* Spazio verticale. */
-    border-bottom: 1px solid #eee;             /* Bordo inferiore grigio chiaro. */
-}                                              /* Chiude li. */
-
-.contact-list li:last-child {                  /* Ultimo elemento della lista. */
-    border-bottom: none;                       /* Rimuove il bordo inferiore. */
-}                                              /* Chiude last-child. */
-
-.contact-list strong {                         /* Etichette in grassetto. */
-    color: #0078ff;                            /* Colore azzurro. */
-    font-size: 14px;                           /* Dimensione. */
-    text-transform: uppercase;                 /* Testo maiuscolo. */
-    letter-spacing: 0.5px;                     /* Spaziatura tra lettere. */
-    margin-bottom: 5px;                        /* Margine inferiore. */
-}                                              /* Chiude strong. */
-
-.contact-list span {                           /* Valori dei contatti. */
-    color: #555;                               /* Colore grigio. */
-    font-size: 16px;                           /* Dimensione. */
-}                                              /* Chiude span. */
-
-/* ===== ANIMATION ===== */                    /* Sezione animazione. */
-@keyframes fadeIn {                            /* Definizione. */
-    from { opacity: 0; transform: translateY(10px); } /* Inizio. */
-    to { opacity: 1; transform: translateY(0); } /* Fine. */
-}                                              /* Chiude keyframes. */
-
-/* ===== MOBILE ===== */                       /* Mobile. */
-@media (max-width: 600px) {                    /* Schermi stretti. */
-    .contact-box {                             /* Box su mobile. */
-        padding: 25px;                         /* Riduce padding. */
-    }                                          /* Chiude box. */
-}                                              /* Chiude media query. */
-```
-
----
-
-### `frontend/public/css/navbar.css`
-
-```css
-/*  NAVBAR  */                                 /* Sezione navbar. */
-.navbar {                                      /* Selettore navbar. */
-    width: 100%;                               /* Larghezza piena. */
-    background: #ffffff;                       /* Sfondo bianco. */
-    padding: 15px 30px;                        /* Spazio interno verticale e orizzontale. */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);    /* Ombra sotto la navbar. */
-    display: flex;                             /* Layout flessivo. */
-    justify-content: space-between;            /* Spazia logo e link ai lati opposti. */
-    align-items: center;                       /* Allinea verticalmente al centro. */
-    position: sticky;   /* rimane in alto */   /* Fa restare la navbar in alto durante lo scroll. */
-    top: 0;                                    /* Attacca la navbar al bordo superiore. */
-    z-index: 100;                              /* Mantiene la navbar sopra gli altri elementi. */
-}                                              /* Chiude navbar. */
-
-.nav-logo {                                    /* Selettore del logo. */
-    font-size: 22px;                           /* Dimensione testo. */
-    font-weight: bold;                         /* Grassetto. */
-    color: #333;                               /* Colore. */
-    letter-spacing: 0.5px;                     /* Spaziatura tra lettere. */
-}                                              /* Chiude logo. */
-
-/* LINKS */                                    /* Sezione link. */
-.nav-links {                                   /* Selettore lista link. */
-    list-style: none;                          /* Rimuove pallini. */
-    display: flex;                             /* Layout orizzontale. */
-    gap: 25px;                                 /* Spazio tra i link. */
-}                                              /* Chiude lista. */
-
-.nav-links a {                                 /* Selettore dei link. */
-    text-decoration: none;                     /* Rimuove la sottolineatura. */
-    color: #0078ff;                            /* Colore azzurro. */
-    font-size: 16px;                           /* Dimensione. */
-    padding: 6px 10px;                         /* Spazio interno. */
-    border-radius: 6px;                        /* Angoli. */
-    transition: 0.25s ease;                    /* Transizione morbida. */
-}                                              /* Chiude link. */
-
-.nav-links a:hover {                           /* Stile al passaggio del mouse. */
-    background: #e8f1ff;                       /* Sfondo azzurro chiarissimo. */
-    color: #005fcc;                            /* Colore azzurro scuro. */
-}                                              /* Chiude hover. */
-
-/*  MOBILE  */                                 /* Sezione mobile. */
-@media (max-width: 600px) {                    /* Schermi piccoli. */
-    .navbar {                                  /* Navbar su mobile. */
-        flex-direction: column;                /* Dispone logo e link in colonna. */
-        gap: 10px;                             /* Spazio verticale. */
-        padding: 20px;                         /* Padding uniforme. */
-    }                                          /* Chiude navbar mobile. */
-
-    .nav-links {                               /* Lista link su mobile. */
-        flex-direction: column;                /* Link in colonna. */
-        gap: 12px;                             /* Spazio tra link. */
-        text-align: center;                    /* Centra i link. */
-    }                                          /* Chiude lista mobile. */
-}                                              /* Chiude media query. */
-```
-
----
-
-### `frontend/public/css/footer.css`
-
-```css
-/*  FOOTER  */                                 /* Sezione footer. */
-.footer {                                      /* Selettore footer. */
-    margin-top: auto;/* margin-top: auto; fa sì che il footer si posizioni in basso */ /* Spinge il footer verso il basso. */
-    background: #ffffff;/* background: #ffffff;  fa sì che il footer abbia uno sfondo bianco */ /* Sfondo bianco. */
-    padding: 15px; /* padding: 15px; fa sì che il footer abbia un po' di spazio interno */ /* Spazio interno. */
-    text-align: center;/* text-align: center; fa sì che il testo del footer sia centrato */ /* Testo centrato. */
-    color: #666;                               /* Colore grigio. */
-    font-size: 14px;                           /* Dimensione testo. */
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.1);/* box-shadow: 0 -4px 12px rgba(0,0,0,0.1); fa sì che il footer abbia un'ombra sopra di esso */ /* Ombra sopra. */
-}                                              /* Chiude footer. */
-```
-
----
-
-### `frontend/public/js/weather.js`
-
-```javascript
-// Aggiunge un ascoltatore per l'evento submit del form meteo.
+/**
+ * Logica client-side per la pagina Meteo (weather.html).
+ * - Intercetta l'evento di invio del form evitando il reload della pagina (e.preventDefault).
+ * - Invia una richiesta POST asincrona in formato JSON all'endpoint Gateway /api/v1/weather.
+ * - Renderizza nel DOM l'esito della chiamata (scheda meteo completa oppure messaggio di errore).
+ */
 document.getElementById("weather-form").addEventListener("submit", async function(e) {
-    e.preventDefault(); // evita il redirect                       // Blocca l'invio normale del form per evitare il ricaricamento della pagina.
+    e.preventDefault();
 
-    const city = document.getElementById("city-input").value.trim(); // Legge la città inserita, rimuovendo spazi iniziali e finali.
+    const city = document.getElementById("city-input").value.trim();
 
-    const res = await fetch("/weather", {                        // Invia una richiesta POST asincrona alla route /weather del server.
-        method: "POST",                                          // Specifica che il metodo HTTP è POST.
-        headers: { "Content-Type": "application/json" },         // Dice al server che il corpo della richiesta è in formato JSON.
-        body: JSON.stringify({ city })                           // Converte l'oggetto { city: city } in una stringa JSON.
+    const res = await fetch("/api/v1/weather", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ city })
     });
 
-    const data = await res.json();                               // Legge la risposta del server come oggetto JSON.
+    const data = await res.json();
+    const resultBox = document.getElementById("weather-result");
 
-    const resultBox = document.getElementById("weather-result"); // Seleziona il div dove verrà mostrato il risultato.
-
-    if (data.error) {                                            // Controlla se il server ha restituito un errore.
-        resultBox.innerHTML = `                                  // Inserisce un messaggio di errore nel box.
+    if (data.error) {
+        resultBox.innerHTML = `
             <div class="weather-response-box subtitle" style="color: #c0392b;">
                 ${data.message}
             </div>
         `;
-    } else {                                                     // Altrimenti la risposta contiene i dati meteo.
-        resultBox.innerHTML = `                                  // Inserisce i dati meteo formattati nel box.
+    } else {
+        resultBox.innerHTML = `
             <div class="weather-response-box">
                 <h3>${data.city}</h3>
                 <img src="https://openweathermap.org/img/wn/${data.icon}@2x.png" alt="${data.description}">
@@ -1446,44 +1934,889 @@ document.getElementById("weather-form").addEventListener("submit", async functio
         `;
     }
 
-    resultBox.style.display = "block";                           // Rende visibile il box del risultato.
+    resultBox.style.display = "block";
 });
+```
 
-/*DOM Javascript della pagina lato client ha queste caratteristiche:
-- seleziona elementi del DOM (getElementById)
-- aggiunge un event listener al form per intercettare l'evento di submit
-- previene il comportamento predefinito del form (redirect)
-- legge e pulisce il valore dell'input della città
-- invia una richiesta POST al server con la città come payload JSON
-- riceve la risposta dal server come JSON
-- distingue tra errore e successo e aggiorna il div dedicato di conseguenza
-- mostra il div con il risultato della richiesta meteo*/
+---
+
+#### `frontend/public/js/FBI.js`
+
+```javascript
+/**
+ * Logica client-side per la pagina FBI (FBI.html).
+ * - Richiede la scheda del ricercato del giorno al Gateway (/api/v1/wanted/api/wanted/today).
+ * - Costruisce dinamicamente gli elementi HTML (titolo, foto, descrizione, categoria, link)
+ *   utilizzando textContent per prevenire vulnerabilità XSS.
+ */
+async function loadWantedPerson() {
+    const result = document.getElementById("fbi-result");
+
+    try {
+        const response = await fetch("/api/v1/wanted/api/wanted/today");
+        const person = await response.json();
+
+        if (!response.ok) {
+            throw new Error(person.error || "Servizio non disponibile");
+        }
+
+        const title = document.createElement("h2");
+        title.textContent = person.title;
+        result.replaceChildren(title);
+
+        if (person.image) {
+            const image = document.createElement("img");
+            image.src = person.image;
+            image.alt = person.title;
+            image.className = "fbi-image";
+            result.append(image);
+        }
+
+        if (person.description) {
+            const description = document.createElement("p");
+            description.textContent = person.description;
+            description.className = "fbi-description";
+            result.append(description);
+        }
+
+        if (Array.isArray(person.subjects) && person.subjects.length > 0) {
+            const subjects = document.createElement("p");
+            subjects.textContent = `Categoria: ${person.subjects.join(", ")}`;
+            result.append(subjects);
+        }
+
+        if (person.reward) {
+            const reward = document.createElement("p");
+            reward.textContent = person.reward;
+            result.append(reward);
+        }
+
+        if (person.url) {
+            const link = document.createElement("a");
+            link.href = person.url;
+            link.textContent = "Apri la scheda ufficiale FBI";
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            result.append(link);
+        }
+    } catch (error) {
+        result.textContent = error.message || "Non è stato possibile caricare la scheda FBI.";
+    }
+}
+
+loadWantedPerson();
+```
+
+---
+
+
+### Frontend — Fogli di Stile CSS (`frontend/public/css`)
+
+#### `frontend/public/css/navbar.css`
+
+```css
+/* ===== Barra di navigazione principale (sticky in alto) ===== */
+.navbar {
+    width: 100%;
+    background: #ffffff;
+    padding: 15px 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+    letter-spacing: 0.5px;
+}
+
+/* ===== Collegamenti di navigazione ===== */
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #0078ff;
+    font-size: 16px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: 0.25s ease;
+}
+
+.nav-links a:hover {
+    background: #e8f1ff;
+    color: #005fcc;
+}
+
+/* ===== Responsive: disposizione verticale su schermi < 600px ===== */
+@media (max-width: 600px) {
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 20px;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+}
+```
+
+---
+
+#### `frontend/public/css/footer.css`
+
+```css
+/* ===== Piè di pagina (fissato in basso tramite margin-top: auto del flex container) ===== */
+.footer {
+    margin-top: auto;
+    background: #ffffff;
+    padding: 15px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+}
+```
+
+---
+
+#### `frontend/public/css/index.css`
+
+```css
+/* ===== Reset CSS globale e box-sizing ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== Layout base con Flexbox a colonna a tutta altezza ===== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Contenitore centrale Home ===== */
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container h1 {
+    font-size: 40px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.container p {
+    font-size: 18px;
+    color: #555;
+}
+```
+
+---
+
+#### `frontend/public/css/weather.css`
+
+```css
+/* ===== Reset e box model ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== Layout a tutta altezza ===== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Contenitore centrale con disposizione verticale delle card ===== */
+.weather-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+/* ===== Card con modulo o risultati meteo ===== */
+.weather-box {
+    background: #ffffff;
+    padding: 30px 35px;
+    border-radius: 12px;
+    width: 380px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    animation: fadeIn 0.4s ease;
+    text-align: center;
+}
+
+.weather-box h2 {
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.subtitle {
+    margin-bottom: 25px;
+    color: #555;
+    font-size: 16px;
+}
+
+/* ===== Campo di testo input città ===== */
+.weather-box input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 18px;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+}
+
+.weather-box input:focus {
+    border-color: #0078ff;
+    outline: none;
+}
+
+/* ===== Bottone di invio ricerca ===== */
+.weather-box button {
+    width: 100%;
+    padding: 12px;
+    background: #0078ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.1s;
+}
+
+.weather-box button:hover {
+    background: #005fcc;
+}
+
+.weather-box button:active {
+    transform: scale(0.98);
+}
+
+/* Box risultato: nascosto fino alla ricezione dei dati dal server */
+#weather-result {
+    display: none;
+}
+
+/* ===== Animazione di entrata dal basso ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+```
+
+---
+
+#### `frontend/public/css/fbi.css`
+
+```css
+/* Stili specifici per la scheda FBI; gli stili di base sono in weather.css. */
+.fbi-wrapper {
+    padding: 24px 16px;
+}
+
+.fbi-box {
+    width: min(760px, 100%);
+}
+
+.fbi-box h1 {
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.fbi-image {
+    display: block;
+    max-width: 100%;
+    max-height: 480px;
+    margin: 20px auto;
+    object-fit: contain;
+}
+
+.fbi-description {
+    margin: 16px 0;
+    white-space: pre-line;
+    text-align: left;
+}
+
+#fbi-result a {
+    display: inline-block;
+    margin-top: 12px;
+    color: #154f91;
+}
+```
+
+---
+
+#### `frontend/public/css/login.css`
+
+```css
+/* ===== Reset e box model ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== Struttura principale della pagina ===== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ===== Contenitore per centrare il box a schermo ===== */
+.login-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== Card bianca con ombra ed animazione di comparsa ===== */
+.login-box {
+    background: #ffffff;
+    padding: 30px 35px;
+    border-radius: 12px;
+    width: 320px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    animation: fadeIn 0.4s ease;
+}
+
+.login-box h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* ===== Campi di input del modulo ===== */
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 18px 0;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+}
+
+.login-box input:focus {
+    border-color: #0078ff;
+    outline: none;
+}
+
+/* ===== Pulsante di invio ===== */
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    background: #0078ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.1s;
+}
+
+.login-box button:hover {
+    background: #005fcc;
+}
+
+.login-box button:active {
+    transform: scale(0.98);
+}
+
+/* ===== Animazione di entrata dal basso verso l'alto ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Divisore OR ===== */
+.or-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #aaa;
+    font-size: 13px;
+}
+
+.or-divider::before,
+.or-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+}
+
+.or-divider span {
+    padding: 0 10px;
+}
+
+/* ===== Pulsante Login con Google ===== */
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background: #ffffff;
+    color: #444;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.25s, box-shadow 0.25s, transform 0.1s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-google img {
+    width: 22px;
+    height: 22px;
+}
+
+.btn-google:hover {
+    background: #f5f5f5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-google:active {
+    transform: scale(0.98);
+}
+```
+
+---
+
+#### `frontend/public/css/signup.css`
+
+```css
+/* ===== Reset e box model ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== Struttura principale della pagina ===== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ===== Contenitore per centrare il box a schermo ===== */
+.signup-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== Card bianca con ombra ed animazione di comparsa ===== */
+.signup-box {
+    background: #ffffff;
+    padding: 30px 35px;
+    border-radius: 12px;
+    width: 320px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    animation: fadeIn 0.4s ease;
+}
+
+.signup-box h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* ===== Campi di input del modulo ===== */
+.signup-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 18px 0;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+}
+
+.signup-box input:focus {
+    border-color: #0078ff;
+    outline: none;
+}
+
+/* ===== Pulsante di invio con stati hover e active ===== */
+.signup-box button {
+    width: 100%;
+    padding: 12px;
+    background: #0078ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.1s;
+}
+
+.signup-box button:hover {
+    background: #005fcc;
+}
+
+.signup-box button:active {
+    transform: scale(0.98);
+}
+
+/* ===== Animazione di entrata dal basso verso l'alto ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Divisore OR ===== */
+.or-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #aaa;
+    font-size: 13px;
+}
+
+.or-divider::before,
+.or-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+}
+
+.or-divider span {
+    padding: 0 10px;
+}
+
+/* ===== Pulsante Registrati con Google ===== */
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background: #ffffff;
+    color: #444;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.25s, box-shadow 0.25s, transform 0.1s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-google img {
+    width: 22px;
+    height: 22px;
+}
+
+.btn-google:hover {
+    background: #f5f5f5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-google:active {
+    transform: scale(0.98);
+}
+```
+
+---
+
+#### `frontend/public/css/about.css`
+
+```css
+/* ===== Reset e box model ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== Layout a tutta altezza ===== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Contenitore centrale della sezione About ===== */
+.about-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ===== Card informativa ===== */
+.about-box {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    animation: fadeIn 0.4s ease;
+}
+
+.about-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 600;
+}
+
+.about-box h3 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.about-box p {
+    color: #555;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* ===== Lista caratteristiche con spunte personalizzate ===== */
+.feature-list {
+    list-style: none;
+    padding: 0;
+}
+
+.feature-list li {
+    padding: 10px 0 10px 28px;
+    color: #555;
+    position: relative;
+}
+
+.feature-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #0078ff;
+    font-weight: bold;
+}
+
+/* ===== Animazione di comparsa ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Adattamento per dispositivi mobili ===== */
+@media (max-width: 600px) {
+    .about-box {
+        padding: 25px;
+    }
+}
+```
+
+---
+
+#### `frontend/public/css/contact.css`
+
+```css
+/* ===== Reset e box model ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== Layout a tutta altezza ===== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Contenitore centrale della sezione Contact ===== */
+.contact-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ===== Card contatti ===== */
+.contact-box {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    animation: fadeIn 0.4s ease;
+}
+
+.contact-box h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.contact-box > p {
+    text-align: center;
+    color: #555;
+    margin-bottom: 25px;
+}
+
+/* ===== Lista contatti con etichette evidenziate ===== */
+.contact-list {
+    list-style: none;
+    padding: 0;
+}
+
+.contact-list li {
+    display: flex;
+    flex-direction: column;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.contact-list li:last-child {
+    border-bottom: none;
+}
+
+.contact-list strong {
+    color: #0078ff;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.contact-list span {
+    color: #555;
+    font-size: 16px;
+}
+
+/* ===== Animazione di comparsa ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Adattamento per dispositivi mobili ===== */
+@media (max-width: 600px) {
+    .contact-box {
+        padding: 25px;
+    }
+}
 ```
 
 ---
 
 ## 8. Cose da sapere e possibili miglioramenti
 
-- **Componenti condivisi**: la navbar e il footer sono caricati via `fetch` in ogni pagina. Questo è un modo semplice per evitare duplicazione, ma ha il limite che se JavaScript è disabilitato i componenti non compaiono.
-- **Organizzazione del backend**: le route sono state suddivise in file separati (`pageroutes.js`, `weather.js`, `auth.js`, `signin.js`), la logica è isolata nei controller (`weatherController.js`, `authcontroller.js`, `signincontroller.js`) e le operazioni di supporto (validazione, chiamata API, normalizzazione dati, logging, configurazione) sono state spostate in `utils/`. Questo rende il codice più modulare e facile da espandere.
-- **Weather API completata**: il backend espone la route `POST /weather` in `route/weather.js`. Il controller coordina `validateCity`, `apiclient`, `normalizeWeather`, `logger` e `constants` per chiamare OpenWeatherMap e restituire i dati. La chiave API viene letta dalle variabili d'ambiente tramite `utils/constants.js`.
-- **Persistenza dati**: login e signup non salvano nulla. In un'applicazione reale servirebbe un database (SQLite, MongoDB, PostgreSQL, ecc.).
-- **Sicurezza**: le password non vengono mai inviate in chiaro in produzione; qui sono in chiaro solo per scopo didattico. Anche la chiave API meteo deve rimanere nel file `.env` e non essere committata.
-- **`package.json` aggiornato**: contiene solo le dipendenze effettivamente usate (`body-parser`, `dotenv`, `express`, `node-fetch`). Non sono più presenti dipendenze errate o non utilizzate.
+- **Session Store in produzione**: attualmente `express-session` utilizza lo store in memoria predefinito (`MemoryStore`). In un ambiente di produzione con più istanze scalate orizzontalmente è consigliato passare a uno store distribuito come Redis (`connect-redis`).
+- **Persistenza su Database**: i controller di login classico (`authcontroller.js`) e signup (`signincontroller.js`) utilizzano verifiche didattiche senza database. Il passo successivo consiste nell'integrazione di un database relazionale (PostgreSQL, SQLite con Prisma o Sequelize) o NoSQL (MongoDB).
+- **Terminazione TLS / HTTPS**: in un'architettura reale, l'API Gateway si occupa anche della terminazione TLS (HTTPS), esponendo certificati SSL validi verso il client esterno e comunicando in HTTP semplice sulla rete interna sicura dei microservizi.
+- **Protezione CSRF e sicurezza Cookie**: l'attributo `sameSite: "lax"` e `httpOnly: true` nel cookie di sessione proteggono da furti di token tramite attacchi XSS. In produzione va aggiunto `secure: true` con protocollo HTTPS.
+- **Gestione delle quote API**: il Gateway può implementare middleware di Rate Limiting (es. `express-rate-limit`) per proteggere i servizi interni e le quote esterne di OpenWeatherMap e FBI da chiamate abusive.
 
 ---
 
 ## 9. Glossario rapido
 
 | Termine | Significato |
-|---------|-------------|
-| **Route** | Un "percorso" web che il server riconosce, ad esempio `/login`. |
-| **Middleware** | Funzione che Express esegue per ogni richiesta, come `body-parser`. |
-| **DOM** | Rappresentazione in memoria della pagina HTML, manipolabile con JavaScript. |
-| **Fetch API** | Interfaccia del browser per fare richieste HTTP. |
-| **Flexbox** | Sistema CSS per disporre gli elementi in righe o colonne. |
-| **Media query** | Regola CSS che si applica solo in base alla larghezza dello schermo. |
+|---|---|
+| **Microservizio** | Approccio architetturale in cui un'applicazione è composta da piccoli servizi indipendenti che comunicano tramite HTTP/REST. |
+| **API Gateway** | Singolo punto di ingresso che smista le richieste dei client ai microservizi appropriati. |
+| **Reverse Proxy** | Server intermedio che riceve richieste dai client e le inoltra a server backend interni, mascherandoli. |
+| **Endpoint Hiding** | Tecnica che nasconde al client le porte e i percorsi reali dei servizi interni, migliorando sicurezza e manutenibilità. |
+| **API Versioning** | Inserimento della versione nell'URL (es. `/api/v1/`) per evolvere le API senza rompere la retrocompatibilità con i vecchi client. |
+| **OAuth 2.0** | Protocollo standard aperto per l'autorizzazione federata (es. "Accedi con Google") senza condividere le credenziali utente con l'applicazione. |
+| **Passport.js** | Middleware di autenticazione per Node.js che supporta oltre 500 strategie (Google, GitHub, locale, JWT). |
+| **Session Cookie** | Cookie crittografato scambiato tra browser e server che identifica in modo univoco la sessione dell'utente autenticato. |
+| **DOM (Document Object Model)** | Rappresentazione ad albero degli elementi HTML caricati in memoria nel browser, manipolabile tramite JavaScript. |
+| **Fetch API** | Interfaccia moderna del browser basata su Promise per inviare ed elaborare richieste HTTP asincrone. |
+| **XSS (Cross-Site Scripting)** | Vulnerabilità di sicurezza in cui codice JavaScript malevolo viene iniettato nel browser; prevenuta usando `textContent` invece di `innerHTML` per dati non attendibili. |
 
 ---
 
-Fine della guida.
+Fine della guida completa.
