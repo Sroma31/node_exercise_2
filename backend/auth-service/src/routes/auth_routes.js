@@ -24,12 +24,39 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 // Handle Google OAuth callback
 router.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login", session: true }),
+    passport.authenticate("google", { 
+        failureRedirect: "/login", 
+        session: true 
+    }),
+
     (req, res) => {
         // Successful authentication – redirect to frontend (session carries the user)
         res.redirect(env.FRONTEND_URL);
     }
 );
+
+// Return the authenticated user's information if logged in
+router.get("/me", (req, res) => {
+    res.set("Cache-Control", "no-store"); // Prevent caching of sensitive user data
+    if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        return res.json({ 
+            authenticated: true, 
+            user: req.user,
+            firstName: req.user.firstName,
+            lastName: req.user.lastName,
+            displayName: req.user.displayName,
+            email: req.user.email
+        });
+    }
+    return res.json({ 
+        authenticated: false, 
+        user: null,
+        firstName: null,
+        lastName: null
+    });
+});
+
+
 
 // Validate whether the current session is authenticated
 router.get("/validate", (req, res) => {

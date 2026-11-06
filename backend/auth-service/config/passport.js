@@ -1,22 +1,21 @@
-require("dotenv").config(); // Ensure env vars are loaded if passport is required early
-
+const env = require("./env");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 // Guard: fail early with a clear message if credentials are missing
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
     throw new Error(
         "Missing Google OAuth credentials. " +
-        "Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file."
+        "Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env or auth-service.env file."
     );
 }
 
 passport.use(
     new GoogleStrategy(
         {
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3001/auth/google/callback",
+            clientID: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+            callbackURL: env.GOOGLE_CALLBACK_URL || "http://localhost:3001/auth/google/callback",
         },
 
         async (accessToken, refreshToken, profile, done) => {
@@ -25,6 +24,8 @@ passport.use(
                 const user = {
                     googleId: profile.id,
                     displayName: profile.displayName,
+                    firstName: profile.name?.givenName || profile.displayName?.split(" ")[0] || "user",
+                    lastName: profile.name?.familyName || profile.displayName?.split(" ").slice(1).join(" ") || "",
                     email: profile.emails?.[0]?.value,
                 };
 

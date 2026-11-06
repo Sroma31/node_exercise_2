@@ -1,9 +1,9 @@
 /**
- * auth.js — shared script loaded on every page.
+ * auth.js — backward compatibility wrapper pointing to /api/v1/auth/me.
  *
  * Responsibilities:
  *  1. Load the shared navbar and footer components.
- *  2. Call /validate to check the current session.
+ *  2. Call /api/v1/auth/me to check the current session and retrieve user details.
  *  3. Update the navbar to show the user's name + Logout (authenticated)
  *     or the Login link (unauthenticated).
  */
@@ -20,24 +20,33 @@ function loadComponent(containerId, url) {
 
 /** Apply auth state to the navbar after it has been injected. */
 function applyAuthState() {
-    return fetch('/api/v1/auth/validate', { credentials: 'include' })
+    return fetch('/api/v1/auth/me', { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
             const loginItem  = document.getElementById('nav-login-item');
+            const signupItem = document.getElementById('nav-signup-item');
             const userItem   = document.getElementById('nav-user-item');
             const logoutItem = document.getElementById('nav-logout-item');
             const navUser    = document.getElementById('nav-user');
 
-            if (data.authenticated) {
-                navUser.textContent       = '✓ ' + data.user.displayName;
-                navUser.title             = data.user.email;
-                loginItem.style.display   = 'none';
-                userItem.style.display    = '';
-                logoutItem.style.display  = '';
+            if (data && data.authenticated) {
+                const user = data.user || {};
+                const name = data.firstName || user.firstName || user.displayName || data.displayName || 'Utente';
+                const email = data.email || user.email || '';
+
+                if (navUser) {
+                    navUser.textContent = '✓ ' + name;
+                    navUser.title       = email ? `${name} (${email})` : name;
+                }
+                if (loginItem)  loginItem.style.display  = 'none';
+                if (signupItem) signupItem.style.display = 'none';
+                if (userItem)   userItem.style.display   = '';
+                if (logoutItem) logoutItem.style.display = '';
             } else {
-                loginItem.style.display   = '';
-                userItem.style.display    = 'none';
-                logoutItem.style.display  = 'none';
+                if (loginItem)  loginItem.style.display  = '';
+                if (signupItem) signupItem.style.display = '';
+                if (userItem)   userItem.style.display   = 'none';
+                if (logoutItem) logoutItem.style.display = 'none';
             }
         })
         .catch(() => {}); // silently ignore if auth-service is unreachable

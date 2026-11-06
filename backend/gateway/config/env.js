@@ -1,5 +1,18 @@
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
+const fs = require("fs");
+
+const envPaths = [
+    path.join(__dirname, "../gateway.env"),
+    path.join(__dirname, "../.env"),
+    path.join(process.cwd(), "gateway.env"),
+    path.join(process.cwd(), ".env"),
+];
+
+for (const p of envPaths) {
+    if (fs.existsSync(p)) {
+        require("dotenv").config({ path: p });
+    }
+}
 require("dotenv").config();
 
 module.exports = {

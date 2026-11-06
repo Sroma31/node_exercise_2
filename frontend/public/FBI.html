@@ -15,11 +15,6 @@
 <body>
     <!-- La barra di navigazione è condivisa con le altre pagine. -->
     <div id="navbar"></div>
-    <script>
-        fetch("/api/v1/components/navbar.html")
-            .then(response => response.text())
-            .then(html => document.getElementById("navbar").innerHTML = html);
-    </script>
 
     <main class="weather-wrapper fbi-wrapper">
         <section class="weather-box fbi-box">
@@ -31,11 +26,8 @@
 
     <!-- Anche il piè di pagina è condiviso con le altre pagine. -->
     <div id="footer"></div>
-    <script>
-        fetch("/api/v1/components/footer.html")
-            .then(response => response.text())
-            .then(html => document.getElementById("footer").innerHTML = html);
-    </script>
+
+    <script src="/api/v1/js/navbar.js"></script>
     <script src="/api/v1/js/FBI.js"></script>
 </body>
 </html>

@@ -2,12 +2,10 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 
-// Caricamento variabili d'ambiente (.env nel backend/service)
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
-require("dotenv").config();
+// Caricamento variabili d'ambiente (.env o service.env nel backend/service)
+const env = require("../config/env");
 
-const { PORT } = require("./utils/constants");
-const port = PORT || 3000;
+const port = env.PORT || 3000;
 
 const app = express();
 

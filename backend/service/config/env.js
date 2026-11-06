@@ -1,7 +1,18 @@
 const path = require("path");
+const fs = require("fs");
 
-// Carica le variabili dal file .env nella radice del service
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
+const envPaths = [
+    path.join(__dirname, "../service.env"),
+    path.join(__dirname, "../.env"),
+    path.join(process.cwd(), "service.env"),
+    path.join(process.cwd(), ".env"),
+];
+
+for (const p of envPaths) {
+    if (fs.existsSync(p)) {
+        require("dotenv").config({ path: p });
+    }
+}
 require("dotenv").config();
 
 /**
