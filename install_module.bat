@@ -26,6 +26,13 @@ call npm install
 
 echo.
 echo ==============================
+echo INSTALLAZIONE PERSISTANCE SERVICE
+echo ==============================
+cd ..\persistance
+call npm install
+
+echo.
+echo ==============================
 echo INSTALLAZIONE COMPLETATA
 echo ==============================
 echo.

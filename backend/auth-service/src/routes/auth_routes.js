@@ -14,13 +14,8 @@ const router = express.Router();
  * - GET /logout:                 Destroys the session and logs the user out
  */
 
-// Redirect /login to Google OAuth
-router.get("/login", (req, res) => {
-    res.redirect("/google");
-});
-
-// Initiate Google OAuth flow (requests profile and email scopes)
-router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+// Avvia direttamente il flusso Google OAuth sia da /login che da /google
+router.get(["/login", "/google"], passport.authenticate("google", { scope: ["profile", "email"] }));
 
 // Handle Google OAuth callback (supports both /google/callback and /auth/google/callback)
 router.get(

@@ -27,6 +27,21 @@ app.use("/api/v1/auth", createProxyMiddleware({
   }
 }));
 
+// Fallback per chiamate dirette a /google verso Auth Service
+app.use("/google", createProxyMiddleware({
+  target: config.AUTH_SERVICE_URL,
+  changeOrigin: true
+}));
+
+// Proxy verso Persistance Service (dati utente autenticato in JSON)
+app.use("/api/v1/persistance", createProxyMiddleware({
+  target: config.PERSISTANCE_SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    "^/api/v1/persistance": ""
+  }
+}));
+
 // Proxy verso Wanted Service (scheda giornaliera FBI in Python)
 app.use("/api/v1/wanted", createProxyMiddleware({
   target: config.WANTED_SERVICE_URL,

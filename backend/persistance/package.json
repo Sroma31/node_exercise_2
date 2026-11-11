@@ -1,0 +1,14 @@
+{
+  "name": "persistance-service",
+  "version": "1.0.0",
+  "description": "Microservizio di persistenza per node_exercise_2",
+  "main": "src/persistanceservice.js",
+  "scripts": {
+    "start": "node src/persistanceservice.js",
+    "test": "echo \"Nessun test configurato\" && exit 0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1"
+  }
+}

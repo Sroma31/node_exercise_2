@@ -16,6 +16,10 @@ Il flusso di comunicazione delle richieste segue lo schema:
    ├── /api/v1/auth   ──► [Auth Service (Node.js: Porta 3001)] (Google OAuth 2.0 / Passport / Sessioni)
    ├── /api/v1/wanted ──► [Wanted Service (Python: Porta 3002)] (FBI Wanted API)
    └── /api/v1        ──► [Main Service (Node.js: Porta 3000)] (Meteo & Pagine statiche)
+   ├── /api/v1/auth        ──► [Auth Service (Node.js: Porta 3001)] (Google OAuth 2.0 / Passport / Sessioni)
+   ├── /api/v1/persistance ──► [Persistance Service (Node.js: Porta 3003)] (Dati utente e sessione JSON)
+   ├── /api/v1/wanted      ──► [Wanted Service (Python: Porta 3002)] (FBI Wanted API)
+   └── /api/v1             ──► [Main Service (Node.js: Porta 3000)] (Meteo & Pagine statiche)
 ```
 
 ### Componenti Principali
@@ -26,6 +30,11 @@ Il flusso di comunicazione delle richieste segue lo schema:
 | **Auth Service** | `backend/auth-service` | Node.js, Express, Passport.js, `express-session` | `3001` | Gestione delle sessioni e autenticazione social con Google OAuth 2.0. Endpoint `/google`, `/google/callback` (alias `/auth/google/callback`), `/me`, `/validate`, `/logout`. |
 | **Main Service** | `backend/service` | Node.js, Express | `3000` | Logica applicativa meteo (integrazione OpenWeather API), form HTML e servizio file statici. |
 | **Wanted Service** | `backend/wanted_service` | Python 3 (`http.server`, `urllib`) | `3002` | Microservizio per il recupero, la sanitizzazione e la formattazione giornaliera dei dati dell'API FBI Wanted. |
+| **Persistance Service**|
+
+
+
+| **Persistance Service** | `backend/persistance` | Node.js, Express | `3003` | Microservizio che restituisce lo stato di persistenza e il profilo utente in formato JSON inoltrando il cookie di sessione. |
 | **Frontend** | `frontend/public` | HTML5, CSS3, JS Vanilla | - | Pagine interattive (Home, Meteo, FBI, Login, Signup, About, Contact) con navbar/footer dinamici e gestione sessione utente. |
 
 ---
@@ -37,6 +46,7 @@ node_exercise_2/
 ├── backend/
 │   ├── auth-service/         # Microservizio di autenticazione (Google OAuth 2.0, Passport, sessioni)
 │   ├── gateway/              # API Gateway & Reverse Proxy (porta 4000)
+│   ├── persistance/          # Microservizio di persistenza (dati sessione JSON, porta 3003)
 │   ├── service/              # Servizio principale (Meteo, routing pagine statiche, porta 3000)
 │   ├── wanted_service/       # Microservizio Python per dati FBI (porta 3002)
 │   └── readme.md             # Appunti sintetici sul pattern Gateway
@@ -85,6 +95,7 @@ Oppure manualmente accedendo a ciascuna cartella:
 cd backend/gateway && npm install
 cd ../auth-service && npm install
 cd ../service && npm install
+cd ../persistance && npm install
 ```
 
 Il microservizio Python `backend/wanted_service` utilizza esclusivamente moduli della libreria standard (`http.server`, `urllib`, `json`, `datetime`, `pathlib`) e non richiede dipendenze esterne.
@@ -118,11 +129,18 @@ GATEWAY_PORT=4000
 SERVICE_URL=http://localhost:3000
 AUTH_SERVICE_URL=http://localhost:3001
 WANTED_SERVICE_URL=http://localhost:3002
+PERSISTANCE_SERVICE_URL=http://localhost:3003
 ```
 
 ### 4. `backend/wanted_service/.env`
 ```env
 WANTED_PORT=3002
+```
+
+### 5. `backend/persistance/.env`
+```env
+PORT=3003
+AUTH_SERVICE_URL=http://localhost:3001
 ```
 
 ---
@@ -140,6 +158,8 @@ Questo avvierà ciascun microservizio in una finestra di comando dedicata:
 - **Gateway**: `http://localhost:4000/api/v1/`
 - **Main Service**: `http://localhost:3000`
 - **Auth Service**: `http://localhost:3001`
+- **Wanted Service**: `http://localhost:3002`
+- **Persistance Service**: `http://localhost:3003`
 - **Wanted Service**: `http://localhost:3002`
 
 ### Metodo manuale

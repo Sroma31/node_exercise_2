@@ -17,19 +17,15 @@ require("dotenv").config();
 
 /**
  * Validazione delle variabili d'ambiente obbligatorie all'avvio.
- * Se una variabile manca, il processo termina immediatamente con codice di errore 1.
+ * Se PORT manca, viene impostata di default a 3000.
  */
-const requiredEnvVars = [
-    "WEATHER_API_KEY",
-    "PORT"
-];
+if (!process.env.PORT) {
+    process.env.PORT = "3000";
+}
 
-requiredEnvVars.forEach(key => {
-    if (!process.env[key]) {
-        console.error(`Errore critico: la variabile d'ambiente ${key} non è definita.`);
-        process.exit(1);
-    }
-});
+if (!process.env.WEATHER_API_KEY || process.env.WEATHER_API_KEY === "your_openweathermap_api_key_here") {
+    console.warn("Attenzione: WEATHER_API_KEY non è configurata o contiene il valore di default. Le richieste meteo non funzioneranno finché non si inserisce una chiave valida.");
+}
 
 module.exports = {
     WEATHER_API_KEY: process.env.WEATHER_API_KEY,

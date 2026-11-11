@@ -12,5 +12,7 @@ if exist backend\wanted_service\server.py (
     start "Wanted Service" cmd /k "cd backend\wanted_service && python server.py"
 )
 
+start "Persistance Service" cmd /k "cd backend\persistance && node src\persistanceservice.js"
+
 pause
 

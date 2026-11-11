@@ -45,6 +45,8 @@ function applyAuthState() {
             const userItem   = document.getElementById('nav-user-item');
             const logoutItem = document.getElementById('nav-logout-item');
             const navUser    = document.getElementById('nav-user');
+            const persistanceBtn    = document.getElementById('btn-persistance');
+            const persistanceResult = document.getElementById('persistance-result');
 
             if (data && data.authenticated) {
                 const user = data.user || {};
@@ -59,11 +61,14 @@ function applyAuthState() {
                 if (signupItem) signupItem.style.display = 'none';
                 if (userItem)   userItem.style.display   = '';
                 if (logoutItem) logoutItem.style.display = '';
+                if (persistanceBtn) persistanceBtn.style.display = 'inline-block';
             } else {
                 if (loginItem)  loginItem.style.display  = '';
                 if (signupItem) signupItem.style.display = '';
                 if (userItem)   userItem.style.display   = 'none';
                 if (logoutItem) logoutItem.style.display = 'none';
+                if (persistanceBtn) persistanceBtn.style.display = 'none';
+                if (persistanceResult) persistanceResult.style.display = 'none';
             }
         })
         .catch(() => {
@@ -72,11 +77,15 @@ function applyAuthState() {
             const signupItem = document.getElementById('nav-signup-item');
             const userItem   = document.getElementById('nav-user-item');
             const logoutItem = document.getElementById('nav-logout-item');
+            const persistanceBtn    = document.getElementById('btn-persistance');
+            const persistanceResult = document.getElementById('persistance-result');
 
             if (loginItem)  loginItem.style.display  = '';
             if (signupItem) signupItem.style.display = '';
             if (userItem)   userItem.style.display   = 'none';
             if (logoutItem) logoutItem.style.display = 'none';
+            if (persistanceBtn) persistanceBtn.style.display = 'none';
+            if (persistanceResult) persistanceResult.style.display = 'none';
         });
 }
 
