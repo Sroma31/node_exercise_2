@@ -99,6 +99,17 @@ node_exercise_2/
 │   │   │       └── constants.js          # Esportazione costanti PORT e WEATHER_API_KEY
 │   │   ├── .env                          # Variabili di servizio (PORT=3000, WEATHER_API_KEY)
 │   │   └── package.json                  # Dipendenze: express, body-parser, node-fetch, dotenv
+│   ├── persistance/                      # Microservizio di persistenza e verifica sessione (porta 3003)
+│   │   ├── config/
+│   │   │   └── env.js                    # Caricamento .env e valore predefinito della porta 3003
+│   │   ├── src/
+│   │   │   ├── persistanceservice.js      # Entry point del server Express di persistenza
+│   │   │   ├── controllers/
+│   │   │   │   └── persistanceController.js # Chiamata inter-servizio verso /me di Auth Service
+│   │   │   └── routes/
+│   │   │       └── persistance_route.js  # Rotta GET / per restituire JSON di sessione
+│   │   ├── .env                          # Variabili di persistenza (PORT=3003, AUTH_SERVICE_URL)
+│   │   └── package.json                  # Dipendenze: express, dotenv
 │   ├── wanted_service/                   # Microservizio Python FBI (porta 3002)
 │   │   ├── server.py                     # Server HTTP Python con SimpleHTTPRequestHandler e fetch FBI
 │   │   ├── utils/
@@ -137,7 +148,7 @@ node_exercise_2/
 │       ├── about.html                    # Pagina informativa Chi Siamo
 │       └── contact.html                  # Pagina con contatti e recapiti
 ├── install_module.bat                    # Script batch Windows per eseguire npm install in tutti i servizi Node
-├── run.bat                               # Script batch Windows per avviare contemporaneamente i 4 microservizi
+├── run.bat                               # Script batch Windows per avviare contemporaneamente i 5 microservizi
 ├── uninstall_module.bat                  # Script batch Windows per eliminare tutte le cartelle node_modules
 └── .gitignore                            # Esclusione dai commit Git per file .env, node_modules e cache
 ```
@@ -146,7 +157,7 @@ node_exercise_2/
 
 ## 4. Come funziona il backend (Architettura a Microservizi)
 
-L'applicazione non è un monolite, ma una federazione di 4 servizi cooperanti:
+L'applicazione non è un monolite, ma una federazione di 5 servizi cooperanti:
 
 ```text
                +----------------------------------------+
@@ -160,21 +171,31 @@ L'applicazione non è un monolite, ma una federazione di 4 servizi cooperanti:
                |           API GATEWAY                  |
                |        (Porta 4000 Express)            |
                +---------+---------+---------+----------+
-                         |         |         |
+                         |         |         |         |
       /api/v1/auth/*     |         |         |  /api/v1/*
      (riscritto in /*)   |         |         | (riscritto in /*)
-                         v         |         v
-     +-------------------+---+     |   +-----+------------------+
-     |     AUTH SERVICE      |     |   |      MAIN SERVICE      |
-     |   (Porta 3001 Node)   |     |   |   (Porta 3000 Node)    |
-     | - Passport Google     |     |   | - Servizio file statici|
-     | - express-session     |     |   | - Route meteo POST     |
-     | - /me, /validate      |     |   | - OpenWeatherMap API   |
-     +-----------------------+     |   +------------------------+
-                                   |
-                                   | /api/v1/wanted/*
-                                   | (riscritto in /*)
-                                   v
+                         v         |         v         |
+     +-------------------+---+     |   +-----+------------------+   |
+     |     AUTH SERVICE      |     |   |      MAIN SERVICE      |   |
+     |   (Porta 3001 Node)   |     |   |   (Porta 3000 Node)    |   |
+     | - Passport Google     |     |   | - Servizio file statici|   |
+     | - express-session     |     |   | - Route meteo POST     |   |
+     | - /me, /validate      |     |   | - OpenWeatherMap API   |   |
+     +-----------------------+     |   +------------------------+   |
+                                   |                                      |
+                                   | /api/v1/persistance                  |
+                                   | (riscritto in /)                     |
+                                   v                                      |
+                     +-----------------------------+              |
+                     |   PERSISTANCE SERVICE        |              |
+                     |   (Porta 3003 Node)         |              |
+                     | - /me via Cookie            |              |
+                     | - JSON sessione utente     |              |
+                     +-----------------------------+              |
+                                                                  |
+                                  /api/v1/wanted/*             |
+                                  (riscritto in /*)          |
+                                                                  v
                      +-------------+------------+
                      |      WANTED SERVICE      |
                      |    (Porta 3002 Python)   |
@@ -204,7 +225,16 @@ L'applicazione non è un monolite, ma una federazione di 4 servizi cooperanti:
   7. L'utente viene reindirizzato alla Home page (`http://localhost:4000/api/v1/`).
 - Endpoint `/me`: interrogato dalla navbar per verificare se l'utente è autenticato e ricavarne il nome.
 
-### 3. Main Service (`backend/service/`, porta 3000)
+### 3. Persistance Service (`backend/persistance/`, porta 3003)
+- È il microservizio dedicato alla persistenza dello stato utente in formato JSON.
+- Riceve la richiesta `GET /api/v1/persistance` dal frontend, inoltra il cookie di sessione al servizio di autenticazione e interroga `GET /me` su `http://localhost:3001`.
+- Se la sessione è valida, restituisce:
+  - `authenticated: true`
+  - `user: { displayName, firstName, lastName, email }`
+- Se l'utente non è autenticato oppure l'Auth Service non risponde, restituisce comunque una risposta sicura con `authenticated: false` e `user: null`.
+- Questa componente è usata per mostrare dati utente dinamici nella navbar o in specifiche sezioni della Home Page senza esporre internamente la logica di sessione.
+
+### 4. Main Service (`backend/service/`, porta 3000)
 - Fornisce le pagine HTML statiche (`pageroutes.js`).
 - Gestisce la consultazione meteo:
   1. Riceve `POST /weather` con payload JSON `{ city: "Roma" }`;
@@ -213,7 +243,7 @@ L'applicazione non è un monolite, ma una federazione di 4 servizi cooperanti:
   4. In caso di errore (es. città inesistente 404), restituisce un messaggio appropriato;
   5. Se la città esiste, normalizza il payload JSON (`normalizeWeather.js`) ed estrae temperatura, umidità, velocità del vento e codice icona.
 
-### 4. Wanted Service (`backend/wanted_service/`, porta 3002)
+### 5. Wanted Service (`backend/wanted_service/`, porta 3002)
 - Microservizio realizzato in Python 3 puro, senza dipendenze esterne.
 - Interroga l'API ufficiale dell'FBI (`https://api.fbi.gov/wanted/v1/list`).
 - Esegue un algoritmo deterministico giornaliero basato sull'ordinale della data (`date.today().toordinal()`), così che tutti gli utenti visualizzino la stessa scheda nel corso della giornata.
@@ -307,6 +337,27 @@ Ciascun microservizio Node.js dispone del proprio file `package.json` isolato.
 - **body-parser**: lettura payload JSON e form URL-encoded;
 - **node-fetch**: client HTTP per chiamare l'API esterna OpenWeatherMap.
 
+### `backend/persistance/package.json`
+```json
+{
+  "name": "persistance-service",
+  "version": "1.0.0",
+  "description": "Microservizio di persistenza per node_exercise_2",
+  "main": "src/persistanceservice.js",
+  "scripts": {
+    "start": "node src/persistanceservice.js",
+    "test": "echo \"Nessun test configurato\" && exit 0"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1"
+  }
+}
+```
+- **express**: server HTTP del servizio di persistenza;
+- **dotenv**: carica le variabili di ambiente da `.env` senza codice hard-coded;
+- Il servizio è leggero e si occupa soltanto di inoltrare la richiesta di sessione all'Auth Service e di restituire JSON strutturato.
+
 ---
 
 ## 7. Codice completo commentato riga per riga
@@ -347,10 +398,16 @@ call npm install
 
 echo.
 echo ==============================
+echo INSTALLAZIONE PERSISTANCE SERVICE
+echo ==============================
+cd ..\persistance
+call npm install
+
+echo.
+echo ==============================
 echo INSTALLAZIONE COMPLETATA
 echo ==============================
 echo.
-
 pause
 ```
 
@@ -373,9 +430,10 @@ if exist backend\wanted_service\server.py (
     start "Wanted Service" cmd /k "cd backend\wanted_service && python server.py"
 )
 
+start "Persistance Service" cmd /k "cd backend\persistance && node src\persistanceservice.js"
+
 pause
 ```
-
 ---
 
 #### `uninstall_module.bat`
@@ -1150,6 +1208,164 @@ module.exports = {
 
 ---
 
+
+### Backend — Microservizio Persistenza (`backend/persistance`)
+
+#### `backend/persistance/config/env.js`
+
+```javascript
+const path = require("path");
+const fs = require("fs");//fs è una libreria di Node.js che fornisce funzionalità per interagire con il file system, come leggere e scrivere file, creare directory, ecc. In questo contesto, viene utilizzata per verificare l'esistenza di file .env in diverse posizioni.
+
+// Cerca il file .env in diverse posizioni (stessa convenzione degli altri servizi)
+const envPaths = [
+    path.join(__dirname, "../persistance.env"),
+    path.join(__dirname, "../.env"),
+    path.join(process.cwd(), "persistance.env"),
+    path.join(process.cwd(), ".env"),
+];
+
+// Carica il file .env se esiste in una delle posizioni specificate
+for (const p of envPaths) {
+    if (fs.existsSync(p)) {
+        require("dotenv").config({ path: p });
+    }
+}
+require("dotenv").config();
+
+
+//valida e imposta le variabili di ambiente necessarie per il servizio di persistenza
+if (!process.env.PORT) {// Se la variabile di ambiente PORT non è impostata, assegna un valore predefinito
+    process.env.PORT = "3003";
+}
+
+module.exports = {
+    PORT: parseInt(process.env.PORT || "3003", 10),// Imposta la porta del servizio di persistenza, con un valore predefinito di 3003
+    AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL || "http://localhost:3001"
+};
+```
+
+---
+
+#### `backend/persistance/src/persistanceservice.js`
+
+```javascript
+const express = require("express");
+const env = require("../config/env");
+const persistanceRoute = require("./routes/persistance_route");
+
+const app = express();
+
+// Middleware per il parsing del body JSON
+app.use(express.json());
+
+//utilizzo le rotte del servizio di persistenza
+app.use("/", persistanceRoute);
+
+// Avvio del server sulla porta configurata
+app.listen(env.PORT, () => {
+    console.log(`Persistance Service avviato sulla porta ${env.PORT}`);
+});
+
+module.exports = app; // Esportazione dell'app per i test o per l'integrazione con altri moduli
+```
+
+---
+
+#### `backend/persistance/src/controllers/persistanceController.js`
+
+```javascript
+//lo scopo di persistanceController.js è quello di gestire le richieste HTTP relative al servizio di persistenza, 
+//in particolare la rotta principale che verifica l'autenticazione dell'utente tramite il servizio di autenticazione
+//e restituisce informazioni sull'utente autenticato.
+
+
+
+const http = require("http");
+const env = require("../../config/env");
+
+// Definizione del controller per il servizio di persistenza
+exports.getHome = (req, res) => {
+    // Estrai il dominio e la porta dall'URL del servizio di autenticazione
+    const authUrl = new URL(env.AUTH_SERVICE_URL);
+
+
+    //const options è un oggetto che contiene le opzioni per la richiesta HTTP al servizio di autenticazione.
+    const options = {
+        hostname: authUrl.hostname,
+        port: parseInt(authUrl.port || "3001", 10),
+        path: "/me",
+        method: "GET",
+        //un header coockie è uno strumento utilizzato per inviare informazioni di sessione tra il client e il server. In questo caso, viene utilizzato per propagare il cookie di sessione dell'utente autenticato al servizio di autenticazione, in modo che quest'ultimo possa verificare se l'utente è effettivamente autenticato.
+        headers: {
+            // Propaga il cookie di sessione per verificare l'autenticazione
+            Cookie: req.headers.cookie || ""
+        }
+    };
+
+    //la richiesta del servizio di autenticazione viene effettuata tramite http.request, che invia una richiesta GET al servizio di autenticazione per verificare se l'utente è autenticato.
+    const authReq = http.request(options, (authRes) => {// Gestisce la risposta dal servizio di autenticazione
+        let data = "";
+        authRes.on("data", (chunk) => { data += chunk; });// Accumula i dati della risposta
+        authRes.on("end", () => {
+            try {
+
+                const result = JSON.parse(data);
+
+                return res.json({
+                    message: "accesso effettuato con successo",
+                    authenticated: result.authenticated || false,
+                    user: result.authenticated
+                        ? {
+                            displayName: result.displayName || null,
+                            firstName: result.firstName || null,
+                            lastName: result.lastName || null,
+                            email: result.email || null
+                        }
+                        : null
+                });
+
+            } catch {
+                // Se la risposta non è JSON valido, restituiamo comunque una risposta sicura
+                return res.json({
+                    message: "accesso effettuato con successo",
+                    authenticated: false,
+                    user: null
+                });
+            }
+        });
+    });
+
+    authReq.on("error", () => {
+        // Auth service non raggiungibile
+        res.status(503).json({
+            message: "accesso effettuato con successo",
+            authenticated: false,
+            user: null,
+            error: "Auth service non raggiungibile"
+        });
+    });
+
+    authReq.end();
+};
+```
+
+---
+
+#### `backend/persistance/src/routes/persistance_route.js`
+
+```javascript
+const express = require("express");
+const router = express.Router();
+const { getHome } = require("../controllers/persistanceController");
+
+// Definizione della rotta principale per il servizio di persistenza
+router.get(["/", ""], getHome);
+
+module.exports = router;
+```
+
+---
 
 ### Backend — Microservizio Ricercati FBI (`backend/wanted_service`)
 
