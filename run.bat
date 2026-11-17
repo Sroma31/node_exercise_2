@@ -11,5 +11,5 @@ start "Persistence Service" cmd /k "cd backend\persistence-service && node src\p
 start "Wanted Service" cmd /k "cd backend\wanted-service && python server.py"
 
 start "Gateway" cmd /k "cd backend\gateway && node src\gateway.js"
-n
+
 pause

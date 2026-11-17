@@ -71,7 +71,7 @@ class WantedHandler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         # La root del servizio mostra la pagina FBI.
         if path == "/":
-            self.path = "/fbi.html"
+            self.path = "/FBI.html"
 
         # questo endpoint restituisce i dati che fbi.js inserisce nella pagina.
         if path == "/api/wanted/today":

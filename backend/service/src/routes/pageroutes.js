@@ -11,20 +11,20 @@ router.get("/", (req, res) => {
     res.sendFile(path.join(paths.PUBLIC, "index.html"));
 });
 
-// LOGIN
-router.get("/login", (req, res) => {
-    res.sendFile(path.join(paths.PUBLIC, "login.html"));
-});
+// LOGIN (pagina login.html non presente: si usa Google OAuth)
+// router.get("/login", (req, res) => {
+//     res.sendFile(path.join(paths.PUBLIC, "login.html"));
+// });
 
 // ABOUT
 router.get("/about", (req, res) => {
     res.sendFile(path.join(paths.PUBLIC, "about.html"));
 });
 
-// SIGNIN
-router.get("/signin", (req, res) => {
-    res.sendFile(path.join(paths.PUBLIC, "signin.html"));
-});
+// SIGNIN (pagina signin.html non presente)
+// router.get("/signin", (req, res) => {
+//     res.sendFile(path.join(paths.PUBLIC, "signin.html"));
+// });
 
 // WEATHER
 router.get("/weather", (req, res) => {

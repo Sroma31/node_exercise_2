@@ -2,7 +2,7 @@
 
 //const fetch = require("node-fetch");// da installare npm install node-fetch@2 --> 
 //fetch è una funzione che permette di fare richieste HTTP (GET, POST, PUT, DELETE) verso un server o un’API. nel caso non è nativo e va installata la libreria
-const { getWeather } = require("../utils/apiClient");
+const { getWeather } = require("../utils/apiclient");
 const { normalizeWeather } = require("../utils/normalizeWeather");
 const { validateCity } = require("../utils/validateCity");
 //const { WEATHER_API_KEY } = require("../utils/constants");

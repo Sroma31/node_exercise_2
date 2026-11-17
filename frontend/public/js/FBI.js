@@ -4,7 +4,7 @@ async function loadWantedPerson() {
 
     try {
         // Il backend chiama l'API FBI e restituisce solo i dati usati qui.
-        const response = await fetch("api/wanted/today");
+        const response = await fetch("/api/v1/wanted/api/wanted/today");
         const person = await response.json();
 
         if (!response.ok) {

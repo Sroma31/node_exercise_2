@@ -3,7 +3,7 @@
 require("dotenv").config();
 
 // Lista delle variabili obbligatorie
-const requiredVars = ["WEATHER_API_KEY", "PORT"];
+const requiredVars = ["WEATHER_API_KEY"];
 
 // Controllo che tutte le variabili siano presenti
 //per ogni key della lista sopra controlla che esistano
@@ -18,5 +18,5 @@ requiredVars.forEach(key => {
 // Esporto le variabili già validate
 module.exports = {
     WEATHER_API_KEY: process.env.WEATHER_API_KEY,
-    PORT: parseInt(process.env.PORT, 10)
+    PORT: parseInt(process.env.PORT || "3000", 10)
 };
