@@ -1,14 +1,11 @@
-
 const express = require("express");
-const env = require("../../config/env");
 const router = express.Router();
-//Avvia il login: redirect verso Google
-router.get("/db", (req, res, next) => {
-  console.log("Persistence Service attivo");
+const persistenceController = require("../controllers/persistenceController");
 
-    res.json({
-        service: "persistence",
-        status: "ok"
-    });
-  });
+// Recupera i dati dal database remoto
+router.get("/db", persistenceController.getData);
+
+// Salva un nuovo dato nel database remoto
+router.post("/db", persistenceController.saveData);
+
 module.exports = router;
