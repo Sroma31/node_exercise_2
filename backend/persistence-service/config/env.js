@@ -1,3 +1,4 @@
+// Gestisce e valida le variabili d'ambiente del servizio di persistenza
 require("dotenv").config();
 
 if (!process.env.MONGO_URI) {
@@ -7,6 +8,7 @@ if (!process.env.MONGO_URI) {
 
 module.exports = {
   PERSISTENCE_PORT: parseInt(process.env.PERSISTENCE_PORT || "3003", 10),
+  AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL || "http://localhost:3001",
   MONGO_URI: process.env.MONGO_URI,
   FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:4000/api/v1/",
 };

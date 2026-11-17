@@ -9,13 +9,13 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-// Necessari per leggere req.body nelle richieste POST (equivalente di body-parser nel PDF)
+// Middleware per leggere req.body nelle richieste JSON e da form HTML
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/", mongopersistenceRoutes);
 
-// Connette prima a MongoDB Atlas e poi avvia il server HTTP
+// Connette prima a MongoDB Atlas e poi mette in ascolto il server HTTP
 connectDB().then(() => {
   app.listen(env.PERSISTENCE_PORT, () => {
     console.log(`Persistence Server avviato sulla porta ${env.PERSISTENCE_PORT}`);

@@ -1,4 +1,4 @@
-// Gestisce la connessione verso il cluster remoto MongoDB Atlas
+// Connessione al cluster remoto MongoDB Atlas tramite Mongoose
 const mongoose = require("mongoose");
 const env = require("./env");
 

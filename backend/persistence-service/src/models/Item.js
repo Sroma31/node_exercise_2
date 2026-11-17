@@ -1,12 +1,16 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-// Definizione dello schema del documento da salvare su MongoDB
+// Definizione dello schema del documento da salvare su MongoDB Atlas
 const ItemSchema = new Schema({
   nome: {
     type: String,
     required: true,
     trim: true,
+  },
+  utente: {
+    type: String,
+    default: "anonimo",
   },
   presente: {
     type: Boolean,
@@ -14,9 +18,8 @@ const ItemSchema = new Schema({
   },
   dataInserimento: {
     type: Date,
-    default: Date.now, // senza parentesi: calcola la data al momento di ogni salvataggio
+    default: Date.now,
   },
 });
 
-// Esporta il modello collegato alla collection "items" su Atlas
 module.exports = mongoose.model("Item", ItemSchema);

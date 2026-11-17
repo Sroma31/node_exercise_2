@@ -1,5 +1,5 @@
 @echo off
-title Installazione dipendenze Node.js
+title Installazione node_modules
 
 echo.
 echo ==============================
@@ -7,33 +7,35 @@ echo INSTALLAZIONE GATEWAY
 echo ==============================
 cd backend\gateway
 call npm install
+cd ..\..
 
 echo.
 echo ==============================
 echo INSTALLAZIONE AUTH-SERVICE
 echo ==============================
-cd ..\auth-service
+cd backend\auth-service
 call npm install
+cd ..\..
 
 echo.
 echo ==============================
 echo INSTALLAZIONE PERSISTENCE-SERVICE
 echo ==============================
-cd ..\persistence-service
+cd backend\persistence-service
+call npm install mongoose
 call npm install
-
+cd ..\..
 
 echo.
 echo ==============================
 echo INSTALLAZIONE SERVICE
 echo ==============================
-cd ..\service
+cd backend\service
 call npm install
+cd ..\..
 
 echo.
 echo ==============================
 echo INSTALLAZIONE COMPLETATA
 echo ==============================
-echo.
-
 pause

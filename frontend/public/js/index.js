@@ -22,46 +22,73 @@ async function loadWelcomeGif() {
         img.src = "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif";
         img.alt = "Welcome Gif";
 
-        // Input e pulsante per inviare un dato a MongoDB (POST /api/v1/data/db)
         const input = document.createElement("input");
         input.type = "text";
-        input.placeholder = "Inserisci un nome da salvare...";
+        input.placeholder = "Inserisci un elemento da salvare...";
 
         const saveButton = document.createElement("button");
-        saveButton.textContent = "Salva su MongoDB";
+        saveButton.textContent = "Salva su DB";
 
-        // Pulsante esistente per leggere i dati da MongoDB (GET /api/v1/data/db)
-        const button = document.createElement("button");
-        button.textContent = "Data";
+        const loadButton = document.createElement("button");
+        loadButton.textContent = "Data";
 
         const output = document.createElement("div");
         output.className = "output";
 
-        box.append(img, input, saveButton, button, output);
+        box.append(img, input, saveButton, loadButton, output);
         welcomeContent.appendChild(box);
 
-        // Salvataggio su MongoDB
+        // Funzione per mostrare i record salvati in modo leggibile
+        function renderItems(items) {
+            if (!Array.isArray(items) || items.length === 0) {
+                output.textContent = "Nessun dato salvato su MongoDB.";
+                return;
+            }
+
+            const list = document.createElement("ul");
+            items.forEach((item) => {
+                const li = document.createElement("li");
+                const dateStr = new Date(item.dataInserimento).toLocaleString("it-IT");
+                li.textContent = `${item.nome} — salvato da ${item.utente} (${dateStr})`;
+                list.appendChild(li);
+            });
+            output.replaceChildren(list);
+        }
+
+        // Salvataggio su MongoDB (POST)
         saveButton.addEventListener("click", async () => {
             const nome = input.value.trim();
             if (!nome) return;
 
-            const response = await fetch("/api/v1/data/db", {
+            const res = await fetch("/api/v1/data/db", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ nome }),
             });
-            const result = await response.json();
+            const result = await res.json();
+
+            if (!res.ok || result.error) {
+                output.textContent = result.message || "Errore durante il salvataggio";
+                return;
+            }
+
             input.value = "";
-            output.textContent = JSON.stringify(result, null, 2);
+            loadButton.click(); // Ricarica subito la lista aggiornata
         });
 
-        // Lettura da MongoDB
-        button.addEventListener("click", async () => {
-            const response = await fetch("/api/v1/data/db");
-            const result = await response.json();
+        // Lettura da MongoDB (GET)
+        loadButton.addEventListener("click", async () => {
+            const res = await fetch("/api/v1/data/db");
+            const result = await res.json();
 
             console.log(result);
-            output.textContent = JSON.stringify(result, null, 2);
+
+            if (!res.ok || result.error) {
+                output.textContent = result.message || "Errore durante il recupero dei dati";
+                return;
+            }
+
+            renderItems(result.items);
         });
 
     } catch (err) {
