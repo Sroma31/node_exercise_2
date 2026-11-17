@@ -1,36 +1,84 @@
-/* ===== Reset CSS globale e box-sizing ===== */
+/* ===== RESET ===== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* ===== Layout base con Flexbox a colonna a tutta altezza ===== */
+/* ===== BODY ===== */
 body {
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #e3e9f0, #cfd9e8);
     min-height: 100vh;
+
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* IMPORTANTE */
 }
 
-/* ===== Contenitore centrale Home ===== */
-.container {
-    flex: 1;
+/* ===== HERO SECTION ===== */
+.hero {
+    flex: 1; /* OCCUPA LO SPAZIO DISPONIBILE */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 20px;
 }
 
-.container h1 {
+.hero h1 {
     font-size: 40px;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
-.container p {
+.hero p {
     font-size: 18px;
     color: #555;
+}
+#welcome-content{
+    margin-top:20px;
+}
+
+.welcome-box{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    margin-top:20px;
+}
+
+.welcome-box img{
+    width:300px;
+    height:150px;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+.welcome-box button{
+    width:300px;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#0078ff;
+    color:white;
+    cursor:pointer;
+}
+
+.output{
+    width:300px;
+    min-height:40px;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    background:white;
+}
+/* ===== FOOTER ===== */
+.footer {
+    background: #ffffff;
+    padding: 15px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+
+    margin-top: auto; /* SPINGE IL FOOTER IN BASSO */
 }

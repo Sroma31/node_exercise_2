@@ -1,41 +1,50 @@
-/**
- * Logica client-side per la pagina Meteo (weather.html).
- * - Intercetta l'evento di invio del form evitando il reload della pagina (e.preventDefault).
- * - Invia una richiesta POST asincrona in formato JSON all'endpoint Gateway /api/v1/weather.
- * - Renderizza nel DOM l'esito della chiamata (scheda meteo completa oppure messaggio di errore).
- */
 document.getElementById("weather-form").addEventListener("submit", async function(e) {
-    e.preventDefault();
+    e.preventDefault(); // evita il redirect
 
-    const city = document.getElementById("city-input").value.trim();
+    const city = document.getElementById("city-input").value;
 
-    const res = await fetch("/api/v1/weather", {
+    //const res = await fetch("/weather", {
+    const res = await fetch("/api/v1/weather", { //<--QUI
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ city })
     });
 
-    const data = await res.json();
-    const resultBox = document.getElementById("weather-result");
+    const data = await res.json(); // eliminato text, per utilizzare il json dal server
 
+    const box = document.getElementById("weather-result"); 
+
+    // Mostra il box
+    box.style.display = "block";
+
+    // Se la città non esiste
     if (data.error) {
-        resultBox.innerHTML = `
-            <div class="weather-response-box subtitle" style="color: #c0392b;">
+        box.innerHTML = `
+            <div class="weather-response-box subtitle">
                 ${data.message}
             </div>
         `;
-    } else {
-        resultBox.innerHTML = `
-            <div class="weather-response-box">
-                <h3>${data.city}</h3>
-                <img src="https://openweathermap.org/img/wn/${data.icon}@2x.png" alt="${data.description}">
-                <p class="subtitle" style="text-transform: capitalize;">${data.description}</p>
-                <p>Temperatura: <strong>${data.temperature}°C</strong></p>
-                <p>Umidità: <strong>${data.humidity}%</strong></p>
-                <p>Vento: <strong>${data.windSpeed} m/s</strong></p>
-            </div>
-        `;
+        return;
     }
 
-    resultBox.style.display = "block";
+    // Mostra la card meteo
+    box.innerHTML = `
+        <div class="weather-response-box subtitle">
+            <strong>${data.city}</strong><br>
+            ${data.description}<br>
+            Temperatura: ${data.temperature}°C<br>
+            Umidità: ${data.humidity}%<br>
+            Vento: ${data.wind} m/s
+        </div>
+    `;
 });
+/*DOM Javascript della pagina lato client ha queste caratteristicche:
+- seleziona elementi del DOM (getElementById)
+
+- intercetta un evento (addEventListener("submit"))
+
+- legge un valore da un input (city-input)
+
+- aggiorna il DOM (innerHTML)
+
+- usa fetch() per chiamare il tuo backend */

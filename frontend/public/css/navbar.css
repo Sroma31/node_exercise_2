@@ -1,13 +1,13 @@
-/* ===== Barra di navigazione principale (sticky in alto) ===== */
+/* ===== NAVBAR ===== */
 .navbar {
     width: 100%;
     background: #ffffff;
     padding: 15px 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: sticky;
+    position: sticky;   /* rimane in alto */
     top: 0;
     z-index: 100;
 }
@@ -19,7 +19,7 @@
     letter-spacing: 0.5px;
 }
 
-/* ===== Collegamenti di navigazione ===== */
+/* LINKS */
 .nav-links {
     list-style: none;
     display: flex;
@@ -39,8 +39,23 @@
     background: #e8f1ff;
     color: #005fcc;
 }
-
-/* ===== Responsive: disposizione verticale su schermi < 600px ===== */
+.nav-brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+.nav-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+#welcome-user{
+    font-size:0.95rem;
+    font-style:italic;
+    color:#668;
+    font-weight:400;
+}
+/* ===== MOBILE ===== */
 @media (max-width: 600px) {
     .navbar {
         flex-direction: column;

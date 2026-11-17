@@ -1,34 +1,38 @@
-const express = require("express");
-const path = require("path");
-const bodyParser = require("body-parser");
+//il suo unico compito quando il sistema è strutturato bene è: importare le librerie, registrare le routes e avviare il server
 
-// Caricamento variabili d'ambiente (.env o service.env nel backend/service)
-const env = require("../config/env");
-
-const port = env.PORT || 3000;
+const express = require('express');
+const bodyParser = require('body-parser');
+const path = require("path");//non richiede installazione perche presente di default
+//require("dotenv").config(); //da aggiungere per il .nev
+//gestisco env da config e non direttamente dal file envù
+const config = require("../config/env"); // importa PORT
+//importazione dei percorsi
+const paths = require("../config/paths");
+// importazione delle routes
+const pagesRoutes = require("./routes/pageroutes");//gestita come libreria per le routes dei get
+const authRoutes = require("./routes/auth"); ////gestita come libreria per le routes dei post del login
+const weatherRoutes = require("./routes/weather");
 
 const app = express();
+const port = 3000;
 
-// Middleware di parsing: elabora richieste JSON e form URL-encoded (POST da form HTML)
+// config body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Registrazione router applicativi
-const pageRoutes = require("./route/pageroutes");
-const weatherRoutes = require("./route/weather");
-const authRoutes = require("./route/auth");
-const signinRoutes = require("./route/signin");
+//usando il file path.js evitiamo i percorsi relativi che non servono piu
+//app.use(express.static(path.join(__dirname, "../../../frontend/public")));//devo dichiarare dove stanno i file statici
+app.use(express.static(paths.PUBLIC));
+//gestione delle routes
+app.use("/", pagesRoutes);
+//app.use("/", authRoutes);
+app.use("/", weatherRoutes);
 
-app.use("/", pageRoutes);    // Pagine HTML statiche (GET /, /about, /weather, etc.)
-app.use("/", weatherRoutes); // Endpoint meteo (POST /weather)
-app.use("/", authRoutes);    // Autenticazione (POST /login)
-app.use("/", signinRoutes);  // Registrazione utente (POST /signup)
-
-// Servizio file statici (HTML, CSS, JS, immagini da frontend/public)
-app.use(express.static(path.join(__dirname, "../../../frontend/public")));
-
-// Avvio del server HTTP
-app.listen(port, () => {
-    console.log("Server in ascolto alla porta " + port);
-    console.log("Accedi all'indirizzo http://localhost:" + port);
+/*app.listen(port, () => {
+    console.log(`Server avviato su http://localhost:${port}`);
+});*/
+//prendo la porta da config/env.js
+//modifiche qui, nel controller meteo e in env.js
+app.listen(config.PORT, () => {
+    console.log(`Server avviato su http://localhost:${config.PORT}`);
 });

@@ -1,25 +1,17 @@
-<!--
-  Componente di navigazione condiviso.
-  Viene caricato asincronamente tramite fetch() all'interno del contenitore #navbar di ciascuna pagina.
-  Tutti i link utilizzano il prefisso del Gateway /api/v1/ per garantire il corretto instradamento.
-  Gli elementi #nav-login-link e #nav-logout-link vengono mostrati/nascosti da auth.js in base alla sessione.
--->
+<!-- NAVBAR -->
 <nav class="navbar">
-    <div class="nav-logo">My App</div>
-
+    <div class="nav-left">
+        <div class="nav-logo">MyApp</div>
+        <span id="welcome-user"></span>
+    </div>
     <ul class="nav-links">
         <li><a href="/api/v1/">Home</a></li>
-        <li><a href="/api/v1/about">About</a></li>
-        <li><a href="/api/v1/contact">Contact</a></li>
-        <li><a href="/api/v1/wanted/">FBI wanted</a></li>
         <li><a href="/api/v1/weather">Weather</a></li>
-        <li id="nav-signup-item"><a href="/api/v1/signup">Signup</a></li>
-        <li id="nav-login-item"><a href="/api/v1/login">Login</a></li>
-        <li id="nav-user-item" style="display:none;">
-            <span id="nav-user" style="color:#4caf50;font-weight:bold;"></span>
-        </li>
-        <li id="nav-logout-item" style="display:none;">
-            <a href="/api/v1/auth/logout" style="color:#e53935;">Logout</a>
-        </li>
+        <!--li><a href="/api/v1/auth/google">Login With Google</a></li-->
+        <li><a href="/api/v1/wanted/">FBI Wanted</a></li>
+        <!--li><a href="/api/v1/signin">Sign In</a></li-->
+        <li><a href="/api/v1/about">About</a></li>
+        <li id="auth-area"><a href="/api/v1/auth/google/">Login With Google</a></li>
     </ul>
 </nav>
+<!-- <script src="../js/navbar.js"></script> -->

@@ -1,0 +1,4 @@
+/google autentica
+/callback completa il login
+/me restituisce l'utente corrente
+/logout chiude la sessione

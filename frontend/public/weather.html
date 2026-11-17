@@ -3,38 +3,47 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather API</title>
-    <link rel="stylesheet" href="/api/v1/css/navbar.css">
-    <link rel="stylesheet" href="/api/v1/css/footer.css">
-    <link rel="stylesheet" href="/api/v1/css/weather.css">
+
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/weather.css">
 </head>
 
 <body>
 
-    <!-- Contenitore Navbar condivisa -->
+    <!-- NAVBAR -->
     <div id="navbar"></div>
+    <script src="js/navbar.js"></script>
+    <!-- <script>
+        fetch("components/navbar.html")
+            .then(res => res.text())
+            .then(html => document.getElementById("navbar").innerHTML = html);
+    </script> -->
 
-    <!-- Sezione Meteo: form di ricerca città e box per visualizzare i risultati dinamici -->
+    <!-- WEATHER CONTENT -->
     <div class="weather-wrapper">
+
         <div class="weather-box">
             <h2>Weather API</h2>
             <p class="subtitle">Inserisci il nome della città per sapere le condizioni meteo</p>
 
+            <!--form id="weather-form" action="/weather" method="POST"-->
             <form id="weather-form">
                 <input type="text" id="city-input" name="city" placeholder="Nome della città" required>
                 <button type="submit">Invia</button>
             </form>
         </div>
 
+
+        <!-- RISULTATO METEO -->
         <div class="weather-box" id="weather-result"></div>
+        <!-- fine del dom-->
     </div>
-
-    <!-- Contenitore Footer condiviso -->
+    <!-- FOOTER -->
     <div id="footer"></div>
-
-    <script src="/api/v1/js/navbar.js"></script>
-    <script src="/api/v1/js/weather.js"></script>
+    <script src="js/footer.js"></script>
+    <script src="js/weather.js"></script>
 </body>
 
 </html>

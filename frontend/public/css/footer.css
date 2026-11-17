@@ -1,4 +1,4 @@
-/* ===== Piè di pagina (fissato in basso tramite margin-top: auto del flex container) ===== */
+/* ===== FOOTER ===== */
 .footer {
     margin-top: auto;
     background: #ffffff;
@@ -6,5 +6,5 @@
     text-align: center;
     color: #666;
     font-size: 14px;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
 }

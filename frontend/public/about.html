@@ -3,38 +3,62 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About</title>
-    <link rel="stylesheet" href="/api/v1/css/about.css">
-    <link rel="stylesheet" href="/api/v1/css/navbar.css">
-    <link rel="stylesheet" href="/api/v1/css/footer.css">
+
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/about.css">
 </head>
 
 <body>
 
-    <!-- Contenitore Navbar: popolato da navbar.js -->
+    <!-- NAVBAR -->
     <div id="navbar"></div>
+    <script src="js/navbar.js"></script>
+    <!-- <script>
+        fetch("components/navbar.html")
+            .then(res => res.text())
+            .then(html => document.getElementById("navbar").innerHTML = html);
+    </script> -->
 
-    <!-- Pagina descrittiva dell'applicazione -->
-    <main class="about-wrapper">
+    <!-- ABOUT SECTION -->
+    <div class="about-wrapper">
         <div class="about-box">
-            <h2>About My App</h2>
-            <p>My App è una semplice applicazione web che dimostra l'uso di HTML, CSS e JavaScript per creare pagine moderne e responsive.</p>
 
-            <h3>Cosa offriamo</h3>
-            <ul class="feature-list">
-                <li>Interfaccia pulita e responsive</li>
-                <li>Navigazione semplice tra le pagine</li>
-                <li>Form di login e registrazione</li>
-                <li>Integrazione con API meteo</li>
-            </ul>
+            <h2>Chi Siamo</h2>
+
+            <p>
+                MyApp nasce nel 2024 come progetto personale con un obiettivo semplice:
+                creare un'applicazione moderna, veloce e intuitiva per gestire informazioni
+                quotidiane come meteo, accesso utenti e contenuti personalizzati.
+            </p>
+
+            <p>
+                Nel corso del tempo, MyApp è cresciuta grazie alla passione per il design,
+                la programmazione e la volontà di offrire un'esperienza pulita e professionale.
+                Oggi il progetto continua ad evolversi, integrando nuove funzionalità e
+                migliorando costantemente l'interfaccia.
+            </p>
+
+            <h3>La Nostra Storia</h3>
+
+            <div class="about-images">
+                <img src="https://picsum.photos/400/250?random=1" alt="Team">
+                <img src="https://picsum.photos/400/250?random=2" alt="Office">
+            </div>
+
+            <p>
+                Il team è composto da sviluppatori, designer e appassionati di tecnologia
+                che credono nella semplicità e nella cura dei dettagli. Ogni funzionalità
+                viene progettata per essere chiara, utile e piacevole da utilizzare.
+            </p>
+
         </div>
-    </main>
+    </div>
 
-    <!-- Contenitore Footer: popolato da navbar.js -->
+    <!-- FOOTER -->
     <div id="footer"></div>
-
-    <script src="/api/v1/js/navbar.js"></script>
+    <script src="js/footer.js"></script>
 
 </body>
 

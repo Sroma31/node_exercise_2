@@ -1,16 +1,11 @@
-/**
- * Valida la stringa del nome della città inserita dall'utente.
- * Accetta solo stringhe non vuote contenenti lettere e spazi.
- * @param {string} city - Nome della città da validare
- * @returns {boolean} - true se valida, altrimenti false
- */
+// utils/validateCity.js
+//faccio solo un controllo sul non inserimento di numeri e con piu di un carattere (anche se era meglio regex)
 function validateCity(city) {
-    const regex = /^[a-zA-Z\s]+$/;
-    return (
-        typeof city === "string" &&
-        city.trim().length >= 1 &&
-        regex.test(city)
-    );
+    const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+    return typeof city === "string" &&
+           city.trim().length > 1 &&
+           regex.test(city.trim());
 }
+
 
 module.exports = { validateCity };

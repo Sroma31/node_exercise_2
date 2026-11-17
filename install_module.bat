@@ -1,8 +1,6 @@
 @echo off
 title Installazione dipendenze Node.js
 
-cd /d "%~dp0"
-
 echo.
 echo ==============================
 echo INSTALLAZIONE GATEWAY
@@ -19,16 +17,17 @@ call npm install
 
 echo.
 echo ==============================
-echo INSTALLAZIONE SERVICE
+echo INSTALLAZIONE PERSISTENCE-SERVICE
 echo ==============================
-cd ..\service
+cd ..\persistence-service
 call npm install
+
 
 echo.
 echo ==============================
-echo INSTALLAZIONE PERSISTANCE SERVICE
+echo INSTALLAZIONE SERVICE
 echo ==============================
-cd ..\persistance
+cd ..\service
 call npm install
 
 echo.
@@ -38,4 +37,3 @@ echo ==============================
 echo.
 
 pause
-

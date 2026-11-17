@@ -1,9 +1,11 @@
-/**
- * Funzione helper per la registrazione centralizzata degli errori a console.
- * @param {Error|any} err - Oggetto errore o messaggio da loggare
- */
-function logError(err) {
-    console.error(err);
+// gestione degli errori
+
+function logInfo(message) {
+    console.log(`[INFO] ${new Date().toISOString()} - ${message}`);
 }
 
-module.exports = { logError };
+function logError(message) {
+    console.error(`[ERROR] ${new Date().toISOString()} - ${message}`);
+}
+
+module.exports = { logInfo, logError };

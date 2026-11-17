@@ -6,13 +6,10 @@ start "Auth Service" cmd /k "cd backend\auth-service && node src\authserver.js"
 
 start "Service" cmd /k "cd backend\service && node src\server.js"
 
+start "Persistence Service" cmd /k "cd backend\persistence-service && node src\persistenceserver.js"
+
+start "Wanted Service" cmd /k "cd backend\wanted-service && python server.py"
+
 start "Gateway" cmd /k "cd backend\gateway && node src\gateway.js"
-
-if exist backend\wanted_service\server.py (
-    start "Wanted Service" cmd /k "cd backend\wanted_service && python server.py"
-)
-
-start "Persistance Service" cmd /k "cd backend\persistance && node src\persistanceservice.js"
-
+n
 pause
-

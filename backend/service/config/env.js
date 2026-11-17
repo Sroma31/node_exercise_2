@@ -1,33 +1,22 @@
-const path = require("path");
-const fs = require("fs");
-
-const envPaths = [
-    path.join(__dirname, "../service.env"),
-    path.join(__dirname, "../.env"),
-    path.join(process.cwd(), "service.env"),
-    path.join(process.cwd(), ".env"),
-];
-
-for (const p of envPaths) {
-    if (fs.existsSync(p)) {
-        require("dotenv").config({ path: p });
-    }
-}
+// config/env.js
+//gestisce e valida le variabili d’ambiente --> sicurezza che env sia corretto, accessibile e funzioni
 require("dotenv").config();
 
-/**
- * Validazione delle variabili d'ambiente obbligatorie all'avvio.
- * Se PORT manca, viene impostata di default a 3000.
- */
-if (!process.env.PORT) {
-    process.env.PORT = "3000";
-}
+// Lista delle variabili obbligatorie
+const requiredVars = ["WEATHER_API_KEY", "PORT"];
 
-if (!process.env.WEATHER_API_KEY || process.env.WEATHER_API_KEY === "your_openweathermap_api_key_here") {
-    console.warn("Attenzione: WEATHER_API_KEY non è configurata o contiene il valore di default. Le richieste meteo non funzioneranno finché non si inserisce una chiave valida.");
-}
+// Controllo che tutte le variabili siano presenti
+//per ogni key della lista sopra controlla che esistano
+//per evitare il problema dell'undefined su una key
+requiredVars.forEach(key => {
+    if (!process.env[key]) {
+        console.error(`La variabile ${key} non è definita nel file .env`);
+        process.exit(1); // blocca l'avvio del server
+    }
+});
 
+// Esporto le variabili già validate
 module.exports = {
     WEATHER_API_KEY: process.env.WEATHER_API_KEY,
-    PORT: process.env.PORT
+    PORT: parseInt(process.env.PORT, 10)
 };
