@@ -1,57 +1,56 @@
-
 const express = require("express");
 const passport = require("passport");
 const env = require("../../config/env");
 const router = express.Router();
-//Avvia il login: redirect verso Google
+
+// Se l'utente è già loggato, torna direttamente alla home
+function skipIfAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return res.redirect(env.FRONTEND_URL);
+  }
+  next();
+}
+
+// Avvia il login: redirect verso Google solo se non già autenticato
 router.get(
   "/google",
+  skipIfAuthenticated,
   passport.authenticate("google", {
     scope: ["profile", "email"],
-    prompt: "select_account",//rendirizzo alla utenticazione google ogni volta che clicco su login
-    //http://localhost:4000/api/v1/auth/me infatti mi diceva false sulla autenticazione ma
-    //google lascia la sessione aperta
+    prompt: "select_account",
   })
 );
-// Google rimanda qui. Se il login riesce NON restituiamo il JSON di Google:
-// la sessione contiene già l'utente, quindi riportiamo il browser sul sito.
-// Sarà la navbar a chiedere /me per sapere chi è loggato.
-router.get("/google/callback",
+
+// Google rimanda qui dopo l'autenticazione
+router.get(
+  "/google/callback",
   passport.authenticate("google", {
-    //failureRedirect: "/login",
     failureRedirect: `${env.FRONTEND_URL}`,
   }),
   (req, res) => {
-    //console.log(req.user);
-    //res.json(req.user);
     res.redirect(env.FRONTEND_URL);
   }
 );
-//lo scope è: login fallisce --> restituzione alla home con navbar non modificata
-//login va a buon fine restituzione alla home con navbar aggiornata
 
-// Usata dalla navbar: restituisce solo ciò che serve all'interfaccia
+// Usata dalla navbar e dai microservizi per verificare chi è loggato
 router.get("/me", (req, res) => {
-    
-    /*if (!req.user) {
-        return res.json({
-            authenticated: false
-        });
-    }*/
-   // risposta dipendente dalla sessione: mai in cache
-    res.set("Cache-Control", "no-store");
+  res.set("Cache-Control", "no-store");
 
-    if (!req.isAuthenticated()) {//json non autenticato
-      return res.json({ authenticated: false });
-    }
-    res.json({//json autenticato
-        authenticated: true,
-        //firstName: req.user.displayName.split(" ")[0] //restituzione di bool e nome
-        firstName: req.user.firstName,
-    });
+  if (!req.isAuthenticated()) {
+    return res.json({ authenticated: false });
+  }
 
+  res.json({
+    authenticated: true,
+    userId: req.user._id,
+    googleId: req.user.googleId,
+    email: req.user.email,
+    displayName: req.user.displayName,
+    firstName: req.user.firstName,
+  });
 });
 
+// Chiude la sessione e cancella il cookie
 router.get("/logout", (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
@@ -62,4 +61,5 @@ router.get("/logout", (req, res, next) => {
     });
   });
 });
+
 module.exports = router;

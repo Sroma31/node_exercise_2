@@ -1,4 +1,3 @@
-// Gestisce e valida le variabili d'ambiente del servizio di persistenza
 require("dotenv").config();
 
 if (!process.env.MONGO_URI) {
@@ -11,4 +10,5 @@ module.exports = {
   AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL || "http://localhost:3001",
   MONGO_URI: process.env.MONGO_URI,
   FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:4000/api/v1/",
+  INTERNAL_API_SECRET: process.env.INTERNAL_API_SECRET || "dev-internal-secret",
 };

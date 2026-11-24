@@ -1,8 +1,18 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-// Definizione dello schema del documento da salvare su MongoDB Atlas
 const ItemSchema = new Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    index: true,
+  },
+  googleId: {
+    type: String,
+    required: true,
+    index: true,
+  },
   nome: {
     type: String,
     required: true,

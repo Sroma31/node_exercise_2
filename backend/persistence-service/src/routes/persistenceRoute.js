@@ -2,6 +2,16 @@ const express = require("express");
 const router = express.Router();
 const env = require("../../config/env");
 const persistenceController = require("../controllers/persistenceController");
+const userController = require("../controllers/userController");
+
+// Middleware per chiamate interne tra microservizi
+function requireInternalSecret(req, res, next) {
+  const secret = req.headers["x-internal-secret"];
+  if (!secret || secret !== env.INTERNAL_API_SECRET) {
+    return res.status(403).json({ error: true, message: "Accesso interno negato" });
+  }
+  next();
+}
 
 // Middleware: verifica che l'utente sia autenticato tramite auth-service
 async function requireAuth(req, res, next) {
@@ -32,6 +42,10 @@ async function requireAuth(req, res, next) {
   }
 }
 
+// Rotta interna chiamata da auth-service dopo il login Google
+router.post("/users/sync", requireInternalSecret, userController.syncGoogleUser);
+
+// Rotte dati utente
 router.get("/db", requireAuth, persistenceController.getData);
 router.post("/db", requireAuth, persistenceController.saveData);
 

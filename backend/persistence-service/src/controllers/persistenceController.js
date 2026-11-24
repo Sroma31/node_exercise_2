@@ -1,10 +1,10 @@
 const persistenceService = require("../services/persistenceService");
 
-// GET /db -> restituisce i dati salvati su MongoDB
+// GET /db -> restituisce solo i dati dell'utente loggato
 exports.getData = async (req, res) => {
   try {
-    const items = await persistenceService.getAllItems();
-    console.log(`Recuperati ${items.length} documenti da MongoDB`);
+    const items = await persistenceService.getItemsByUser(req.user.googleId);
+    console.log(`Recuperati ${items.length} documenti per ${req.user.email}`);
 
     res.json({
       service: "persistence",
@@ -18,7 +18,7 @@ exports.getData = async (req, res) => {
   }
 };
 
-// POST /db -> salva un nuovo documento su MongoDB
+// POST /db -> salva un nuovo documento collegato all'utente loggato
 exports.saveData = async (req, res) => {
   const nome = String(req.body.nome || "").trim();
 
@@ -28,8 +28,10 @@ exports.saveData = async (req, res) => {
 
   try {
     const savedItem = await persistenceService.createItem({
+      userId: req.user.userId,
+      googleId: req.user.googleId,
       nome,
-      utente: req.user?.firstName || "utente",
+      utente: req.user.displayName || req.user.firstName || "utente",
       presente: true,
     });
 

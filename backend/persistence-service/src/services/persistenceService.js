@@ -1,13 +1,15 @@
 const Item = require("../models/Item");
 
-// Recupera tutti i documenti ordinati dal più recente
-async function getAllItems() {
-  return await Item.find().sort({ dataInserimento: -1 });
+// Recupera solo i documenti dell'utente autenticato, dal più recente
+async function getItemsByUser(googleId) {
+  return await Item.find({ googleId }).sort({ dataInserimento: -1 });
 }
 
-// Crea e salva un nuovo documento su MongoDB Atlas
-async function createItem({ nome, utente, presente = true }) {
+// Crea e salva un documento associato all'account dell'utente
+async function createItem({ userId, googleId, nome, utente, presente = true }) {
   const newItem = new Item({
+    userId,
+    googleId,
     nome,
     utente,
     presente,
@@ -16,6 +18,6 @@ async function createItem({ nome, utente, presente = true }) {
 }
 
 module.exports = {
-  getAllItems,
+  getItemsByUser,
   createItem,
 };
